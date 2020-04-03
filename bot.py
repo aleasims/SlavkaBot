@@ -31,9 +31,10 @@ else:
     sys.exit(1)
 
 
-def start_handler(bot, update):
+def start_handler(update, context):
     logger.info("User {} started bot".format(update.effective_user["id"]))
-    bot.send_message(update.message.chat_id, "привет, пёс, это Славка!")
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="привет, пёс, это Славка!")
 
 
 SLAVKA_PHRASES = [
@@ -82,13 +83,13 @@ SLAVKA_PHRASES = [
 ]
 
 
-def speak_handler(bot, update):
+def speak_handler(update, context):
     id_ = update.effective_user["id"]
     number = random.randint(0, len(SLAVKA_PHRASES))
     phrase = SLAVKA_PHRASES[number]
     logger.info("User {} asked for speak: {}".format(id_, phrase))
-    bot.send_message(update.message.chat_id, phrase)
-    # update.message.reply_text(phrase)
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text=phrase)
 
 
 if __name__ == '__main__':
