@@ -33,7 +33,7 @@ else:
 
 def start_handler(bot, update):
     logger.info("User {} started bot".format(update.effective_user["id"]))
-    update.message.reply_text("привет, пёс, это Славка!")
+    bot.send_message(update.message.chat_id, "привет, пёс, это Славка!")
 
 
 SLAVKA_PHRASES = [
@@ -87,12 +87,13 @@ def speak_handler(bot, update):
     number = random.randint(0, len(SLAVKA_PHRASES))
     phrase = SLAVKA_PHRASES[number]
     logger.info("User {} asked for speak: {}".format(id_, phrase))
-    update.message.reply_text(phrase)
+    bot.send_message(update.message.chat_id, phrase)
+    # update.message.reply_text(phrase)
 
 
 if __name__ == '__main__':
     logger.info("Starting bot")
-    updater = Updater(TOKEN)
+    updater = Updater(TOKEN, use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler("start", start_handler))
     updater.dispatcher.add_handler(CommandHandler("speak", speak_handler))
