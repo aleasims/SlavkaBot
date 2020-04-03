@@ -1,1 +1,1 @@
-web: python slavka/bot.py
+web: python slavkabot/bot.py
