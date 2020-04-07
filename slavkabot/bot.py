@@ -34,5 +34,7 @@ if __name__ == '__main__':
         CommandHandler('start', handlers.start_handler))
     updater.dispatcher.add_handler(
         CommandHandler('speak', handlers.speak_handler))
+    updater.dispatcher.add_handler(
+        handlers.VerboseHandler(handlers.empty_callback))
 
     run(updater)
