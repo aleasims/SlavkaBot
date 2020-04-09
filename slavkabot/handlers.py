@@ -1,42 +1,22 @@
 import logging
+from telethon import events
 
 from slavka import Slavka
 
+class Handlers:
+    @staticmethod
+    @events.register(events.NewMessage(pattern='/greet'))
+    async def _greet(event):
+        await event.respond(slavka.greeting())
+        raise events.StopPropagation
+
+    @staticmethod
+    @events.register(events.NewMessage(pattern='/speak'))
+    async def _echo(event):
+        await event.respond(slavka.random_phrase())
+
 slavka = Slavka()
+handlers = [getattr(Handlers, field) for field in dir(Handlers) if field[0]=='_' and field[1]!='_']
 
-
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
-logger = logging.getLogger()
-
-
-def start_handler(update, context):
-    id_ = update.effective_user['id']
-    logger.info(f'User {id_} started bot')
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=slavka.greeting())
-
-
-def speak_handler(update, context):
-    id_ = update.effective_user['id']
-    phrase = slavka.random_phrase()
-    logger.info(f'User {id_} asked for speak: {phrase}')
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=phrase)
-
-
-from telegram.ext import Handler
-
-
-class VerboseHandler(Handler):
-    """Only loggs incoming update.
-
-    Used only for debug.
-    """
-
-    def check_update(self, update):
-        logger.debug(str(update))
-
-
-def empty_callback(*args, **kwargs):
-    pass
+if __name__ == "__main__":
+    print (handlers)

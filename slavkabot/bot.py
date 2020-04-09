@@ -1,40 +1,46 @@
-import os
-import sys
+import os, sys
+import telethon as tele
+from telethon import events
+import logging
+from datetime import timedelta
 
-from telegram.ext import CommandHandler, Updater
+from slavka import Slavka
+from handlers import handlers
 
-import handlers
-from handlers import logger
+# from handlers import logger, handlers
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+logger = logging.getLogger()
 
-mode = os.getenv('MODE')
-TOKEN = os.getenv('TOKEN')
+class Bot:
+    def __init__(self):
+        mode = os.getenv('mode') 
+        bot_token = os.getenv('token')
+        api_id = os.getenv('api_id')
+        api_hash = os.getenv('api_hash')
+        mode = os.getenv('mode') 
 
-if mode == 'dev':
-    def run(updater):
-        updater.start_polling()
-elif mode == 'heroku':
-    def run(updater):
-        PORT = int(os.environ.get('PORT', '8443'))
-        HEROKU_APP_NAME = os.environ.get('HEROKU_APP_NAME')
-        updater.start_webhook(listen='0.0.0.0',
-                              port=PORT,
-                              url_path=TOKEN)
-        updater.bot.set_webhook(
-            f'https://{HEROKU_APP_NAME}.herokuapp.com/{TOKEN}')
-else:
-    logger.error('No MODE specified!')
-    sys.exit(1)
+        if mode == 'dev':
+            proxy_hostname = os.getenv('proxy_hostname')
+            proxy_port = os.getenv('proxy_port')
+            proxy_secret = os.getenv('proxy_secret')
 
+            self.bot = tele.TelegramClient('bot', api_id, api_hash, connection=tele.connection.ConnectionTcpMTProxyRandomizedIntermediate,
+                proxy=(proxy_hostname, int(proxy_port), proxy_secret)).start(bot_token=bot_token)
+        
+        elif mode == 'heroku':
+            self.bot = tele.TelegramClient('bot', api_id, api_hash.start(bot_token=bot_token))
+        
+        else:
+            logger.error('No mode specified!')
+            sys.exit(1)
+        
+        for handler in handlers:
+            self.bot.add_event_handler(handler)
+                
+    def start(self):
+        self.bot.run_until_disconnected()
 
 if __name__ == '__main__':
-    logger.info('Starting bot')
-    updater = Updater(TOKEN, use_context=True)
-
-    updater.dispatcher.add_handler(
-        CommandHandler('start', handlers.start_handler))
-    updater.dispatcher.add_handler(
-        CommandHandler('speak', handlers.speak_handler))
-    updater.dispatcher.add_handler(
-        handlers.VerboseHandler(handlers.empty_callback))
-
-    run(updater)
+    bot = Bot()
+    bot.start()
