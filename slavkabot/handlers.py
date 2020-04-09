@@ -11,7 +11,7 @@ class Handlers:
         raise events.StopPropagation
 
     @staticmethod
-    @events.register(events.NewMessage(pattern='/speak'))
+    @events.register(events.NewMessage(pattern='(?i)(слав|slav|/speak)'))
     async def _echo(event):
         await event.respond(slavka.random_phrase())
         raise events.StopPropagation
