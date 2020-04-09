@@ -5,7 +5,7 @@ import logging
 from datetime import timedelta
 
 from slavka import Slavka
-from handlers import handlers
+from handlers import Handler
 
 # from handlers import logger, handlers
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -35,8 +35,8 @@ class Bot:
             logger.error('No mode specified!')
             sys.exit(1)
         
-        for handler in handlers:
-            self.bot.add_event_handler(handler)
+        self.Handler = Handler(self.bot)
+
                 
     def start(self):
         self.bot.run_until_disconnected()
