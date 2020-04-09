@@ -1,1 +1,1 @@
-web: python slavkabot/bot.py
+worker: python slavkabot/bot.py
