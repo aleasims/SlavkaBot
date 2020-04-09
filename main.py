@@ -1,4 +1,5 @@
-from threading import Thread
+import time
+from multiprocessing import Process
 
 from flask import Flask
 
@@ -14,6 +15,8 @@ def home():
     return f'<h1>{slavka.greeting}</h1>'
 
 
-bot = Bot()
-bot_proc = Thread(target=bot.start)
-bot_proc.start()
+if __name__ == "__main__":
+    bot = Bot()
+    time.sleep(15)
+    Process(target=bot.start).start()
+    web.run()

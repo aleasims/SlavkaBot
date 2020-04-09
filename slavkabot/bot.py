@@ -43,7 +43,7 @@ class Bot:
             sys.exit(1)
 
         self.bot.start(bot_token=bot_token)
-        self.Handler=Handler(self.bot)
+        self.Handler = Handler(self.bot)
 
     def start(self):
         self.bot.run_until_disconnected()
