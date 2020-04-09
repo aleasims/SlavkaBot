@@ -17,7 +17,7 @@ class Handler:
         await event.respond(slavka.greeting())
         raise events.StopPropagation
 
-    @events.register(events.NewMessage(pattern='(?i)(слав|slav|/speak)'))
+    @events.register(events.NewMessage(pattern='(?i).*(слав|slav|/speak).*'))
     async def _echo(self, event):
         await event.respond(slavka.random_phrase())
         raise events.StopPropagation
