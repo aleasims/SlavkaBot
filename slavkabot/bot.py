@@ -9,7 +9,7 @@ from handlers import handlers
 
 # from handlers import logger, handlers
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 logger = logging.getLogger()
 
 class Bot:
@@ -29,7 +29,7 @@ class Bot:
                 proxy=(proxy_hostname, int(proxy_port), proxy_secret)).start(bot_token=bot_token)
         
         elif mode == 'heroku':
-            self.bot = tele.TelegramClient('bot', api_id, api_hash, connection_retries=None).start(bot_token=bot_token)
+            self.bot = tele.TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
         
         else:
             logger.error('No mode specified!')
