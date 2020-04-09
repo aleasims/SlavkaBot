@@ -6,7 +6,7 @@ class Slavka:
             self.phrases = [phrase.strip() for phrase in f.readlines()]
 
     def greeting(self):
-        return "привет, пёс, это Славка!"
+        return "Батя в здании!"
 
     def random_phrase(self):
         return random.choice(self.phrases)
