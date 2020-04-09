@@ -1,4 +1,4 @@
-from multiprocessing import Process
+from threading import Thread
 
 from flask import Flask
 
@@ -15,5 +15,5 @@ def home():
 
 
 bot = Bot()
-bot_proc = Process(target=bot.start)
+bot_proc = Thread(target=bot.start)
 bot_proc.start()
