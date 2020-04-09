@@ -36,8 +36,7 @@ class Bot:
             sys.exit(1)
         
         self.Handler = Handler(self.bot)
-
-                
+   
     def start(self):
         self.bot.run_until_disconnected()
 

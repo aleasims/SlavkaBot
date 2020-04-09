@@ -1,7 +1,10 @@
 import logging
+import os
 from telethon import events
 
 from slavka import Slavka
+
+best_chat = os.getenv('best_chat')
 
 class Handler:
     def __init__(self, client):
@@ -23,10 +26,10 @@ class Handler:
         if mode=='all':
             return [getattr(self, field) for field in dir(self) if field[0]=='_' and field[1]!='_']
 
-    # @events.register(events.NewMessage(pattern='^!'))
-    # async def _announce(self, event):
-    #     await event.respond(event.text[])
-    #     raise events.StopPropagation
+    @events.register(events.NewMessage(pattern='^!'))
+    async def _announce(self, event):
+        await self.client.send_message(best_chat, event.text[1:])
+        raise events.StopPropagation
 
 slavka = Slavka()
 
