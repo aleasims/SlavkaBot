@@ -34,7 +34,8 @@ class Bot:
 
         elif mode == 'heroku':
             self.bot = tele.TelegramClient('bot', api_id, api_hash)
-
+            logger.info('A'*100)
+            logger.info(print(self.bot.session))
         else:
             logger.error('No mode specified!')
             sys.exit(1)
