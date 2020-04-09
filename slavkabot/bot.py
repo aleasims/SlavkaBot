@@ -1,6 +1,6 @@
-import logging
 import os
 import sys
+import logging
 
 import telethon as tele
 
@@ -35,13 +35,15 @@ class Bot:
         elif mode == 'heroku':
             self.bot = tele.TelegramClient('bot', api_id, api_hash)
             logger.info('A'*100)
-            logger.info(print(self.bot.session))
+            logger.info(print(self.bot.session)
+            logger.info(print(self.bot.session.port)
+            logger.info(print(self.bot.session.server_address)
         else:
             logger.error('No mode specified!')
             sys.exit(1)
 
         self.bot.start(bot_token=bot_token)
-        self.Handler = Handler(self.bot)
+        self.Handler=Handler(self.bot)
 
     def start(self):
         self.bot.run_until_disconnected()
