@@ -1,1 +1,3 @@
 Telethon
+gunicorn
+flask

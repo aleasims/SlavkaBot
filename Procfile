@@ -1,1 +1,1 @@
-web: python slavkabot/bot.py
+web: gunicorn main:web
