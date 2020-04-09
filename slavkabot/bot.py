@@ -29,7 +29,7 @@ class Bot:
                 proxy=(proxy_hostname, int(proxy_port), proxy_secret)).start(bot_token=bot_token)
         
         elif mode == 'heroku':
-            self.bot = tele.TelegramClient('bot', api_id, api_hash.start(bot_token=bot_token))
+            self.bot = tele.TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
         
         else:
             logger.error('No mode specified!')
