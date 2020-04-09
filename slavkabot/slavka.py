@@ -8,6 +8,9 @@ class Slavka:
     def greeting(self):
         return "Батя в здании!"
 
+    def welcome(self):
+        return "Добро пожаловать в хату!"
+
     def random_phrase(self):
         return random.choice(self.phrases)
 
