@@ -14,6 +14,7 @@ class Handlers:
     @events.register(events.NewMessage(pattern='/speak'))
     async def _echo(event):
         await event.respond(slavka.random_phrase())
+        raise events.StopPropagation
 
 slavka = Slavka()
 handlers = [getattr(Handlers, field) for field in dir(Handlers) if field[0]=='_' and field[1]!='_']
