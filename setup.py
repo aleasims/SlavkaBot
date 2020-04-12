@@ -16,7 +16,8 @@ requierments = [
     'flask',
     'youtokentome',
     'regex',
-    'transformers'
+    'transformers',
+    'torch @ https://download.pytorch.org/whl/torch-0.1.10.post1-cp27-none-macosx_10_7_x86_64.whl',
 ]
 
 entry_points = {
