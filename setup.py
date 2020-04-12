@@ -14,6 +14,7 @@ requierments = [
     'Telethon',
     'gunicorn',
     'flask',
+    'https://download.pytorch.org/whl/cpu/torch-1.4.0%2Bcpu-cp36-cp36m-linux_x86_64.whl',
     'torch==1.4.0+cpu',
     'youtokentome',
     'regex',
@@ -37,7 +38,8 @@ setup(
     dependency_links=[
         "https://download.pytorch.org/whl/torch_stable.html",
         "https://download.pytorch.org/whl/torch_stable/",
-        "https://download.pytorch.org/whl/torch_stable/cpu/"
+        "https://download.pytorch.org/whl/torch_stable/cpu/",
+        "https://download.pytorch.org/whl/cpu/torch-1.4.0%2Bcpu-cp36-cp36m-linux_x86_64.whl"
     ],
     install_requires=requierments,
     entry_points=entry_points
