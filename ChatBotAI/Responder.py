@@ -1,15 +1,21 @@
-from transformers import (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer)
+import logging
+import zipfile
+
+import requests
+from google_drive_downloader import GoogleDriveDownloader as gdd
+
 import torch
 import torch.nn.functional as F
 from ChatBotAI.yt_encoder import YTEncoder
-import requests
-import zipfile
+from transformers import GPT2Config, GPT2LMHeadModel, GPT2Tokenizer
 
 FILTER_VALUE = -float('Inf')
 URL_ZIP_MODEL = "https://drive.google.com/open?id=1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
 ID_GOOGLE_FILE = "1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
 ZIP_NAME = "model_checkpoint.zip"
 DIR_NAME = 'model_checkpoint'
+
+logger = logging.getLogger(__name__)
 
 
 class ChatBotAI:
@@ -21,10 +27,10 @@ class ChatBotAI:
         self.tokenizer = None
 
         if model_path == "":
-            print("Downloading model...")
-            download_file_from_google_drive(ID_GOOGLE_FILE, ZIP_NAME)
-            # download_url(URL_ZIP_MODEL, ZIP_NAME)
-            print("Download completed!")
+            logger.info("Downloading model...")
+            gdd.download_file_from_google_drive(file_id=ID_GOOGLE_FILE,
+                                                dest_path=ZIP_NAME)
+            logger.info("Download completed!")
 
             with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
                 zip_ref.extractall(DIR_NAME)

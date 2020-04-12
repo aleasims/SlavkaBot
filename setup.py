@@ -18,6 +18,7 @@ requierments = [
     'regex',
     'transformers',
     'torch @ https://download.pytorch.org/whl/cpu/torch-1.4.0%2Bcpu-cp36-cp36m-linux_x86_64.whl',
+    'googledrivedownloader',
 ]
 
 entry_points = {
