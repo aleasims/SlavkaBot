@@ -5,7 +5,7 @@ from typing import List
 from telethon.tl.custom import Message
 
 from slavkabot.members import get_member
-from external.gpt2_third_party.Responder import ChatBotAI
+from ChatBotAI.Responder import ChatBotAI
 
 logger = logging.getLogger(__name__)
 
