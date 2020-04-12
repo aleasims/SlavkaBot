@@ -6,6 +6,7 @@ from telethon.tl.custom import Message
 
 from slavkabot.members import get_member
 from ChatBotAI.Responder import ChatBotAI
+from os import path
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,6 @@ class Slavka:
             self.phrases = [phrase.strip() for phrase in f.readlines()]
 
         self.chat_bot_ai = ChatBotAI()
-        self.chat_bot_ai.load_model()
 
     def greeting(self):
         return "Батя в здании!"
@@ -32,13 +32,16 @@ class Slavka:
         context = self.parse_context(context, botname)
         logger.debug(f'Feeding context: {context}')
 
-        # TODO: change to sensible response
-        out_text = self.chat_bot_ai.respond(context)
-        # TODO: Filter out_text till Slavka's response
-        filter_idx = out_text.find('EOM')
-        if filter_idx > 2:
-            out_text = out_text[:filter_idx-2]
-        return out_text
+        if path.exists(self.chat_bot_ai.model_path):
+            self.chat_bot_ai.load_model()
+            out_text = self.chat_bot_ai.respond(context)
+            # TODO: Filter out_text till Slavka's response
+            filter_idx = out_text.find('EOM')
+            if filter_idx > 2:
+                out_text = out_text[:filter_idx-2]
+            return out_text
+        else:
+            return self.random_phrase()
 
     def parse_context(self,
                       messages: List[Message],

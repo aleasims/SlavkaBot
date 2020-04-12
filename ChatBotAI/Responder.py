@@ -36,7 +36,7 @@ class ChatBotAI:
                 zip_ref.extractall(DIR_NAME)
                 model_path = DIR_NAME
 
-        self.model_path = model_path
+        self.model_path = DIR_NAME
 
         self.model_class = GPT2LMHeadModel
         self.config_class = GPT2Config
@@ -155,11 +155,32 @@ def get_confirm_token(response):
 
 
 def save_response_content(response, destination):
-    CHUNK_SIZE = 32768
+    CHUNK_SIZE = 3276
     with open(destination, "wb") as f:
         for chunk in response.iter_content(CHUNK_SIZE):
             if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
+
+
+class ThreadingExample(object):
+    """ Threading example class
+    The run() method will be started and it will run in the background
+    until the application exits.
+    """
+    def __init__(self, id_google="", dest_path_zip="", dest_path=""):
+        self.id_google = id_google
+        self.dest_path_zip = dest_path_zip
+        self.dest_path = dest_path
+
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+
+    def run(self):
+        """ Method that runs forever """
+        download_file_from_google_drive(self.id_google, self.dest_path_zip)
+        with zipfile.ZipFile(self.dest_path_zip, 'r') as zip_ref:
+            zip_ref.extractall(self.dest_path)
 
 # if __name__=="__main__":
 #     chatbot = ChatBotAI()
