@@ -29,7 +29,7 @@ class ChatBotAI:
         if model_path == "":
             logger.info("Downloading model...")
             gdd.download_file_from_google_drive(file_id=ID_GOOGLE_FILE,
-                                                dest_path=ZIP_NAME)
+                                                dest_path=f'./{ZIP_NAME}')
             logger.info("Download completed!")
 
             with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
