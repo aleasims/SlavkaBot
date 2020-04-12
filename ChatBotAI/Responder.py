@@ -5,23 +5,16 @@ from ChatBotAI.yt_encoder import YTEncoder
 import requests
 import zipfile
 
-
 FILTER_VALUE = -float('Inf')
 URL_ZIP_MODEL = "https://drive.google.com/open?id=1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
+ID_GOOGLE_FILE = "1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
 ZIP_NAME = "model_checkpoint.zip"
 DIR_NAME = 'model_checkpoint'
 
 
-def download_url(url, save_path, chunk_size=128):
-    r = requests.get(url, stream=True)
-    with open(save_path, 'wb') as fd:
-        for chunk in r.iter_content(chunk_size=chunk_size):
-            fd.write(chunk)
-
-
 class ChatBotAI:
     def __init__(self, model_path="", tokenizer_class="YTEncoder",
-                 tokenizer_name="ChatBotAI/bpe/yt.model", device='cpu'):
+                 tokenizer_name="bpe/yt.model", device='cpu'):
         # assert model_path != "", "model_path is empty."
         self.model = None
         self.config = None
@@ -29,13 +22,13 @@ class ChatBotAI:
 
         if model_path == "":
             print("Downloading model...")
-            download_url(URL_ZIP_MODEL, ZIP_NAME)
+            download_file_from_google_drive(ID_GOOGLE_FILE, ZIP_NAME)
+            # download_url(URL_ZIP_MODEL, ZIP_NAME)
             print("Download completed!")
 
             with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
                 zip_ref.extractall(DIR_NAME)
                 model_path = DIR_NAME
-
 
         self.model_path = model_path
 
@@ -137,8 +130,31 @@ def sample_sequence(model, length, context, num_samples=1, temperature=1.0, top_
     return generated
 
 
-if __name__=="__main__":
-    chatbot = ChatBotAI()
-    chatbot.load_model()
+def download_file_from_google_drive(id, destination):
+    URL = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+    response = session.get(URL, params={'id': id}, stream=True)
+    token = get_confirm_token(response)
+    if token:
+        params = {'id': id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+    save_response_content(response, destination)
 
 
+def get_confirm_token(response):
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            return value
+    return None
+
+
+def save_response_content(response, destination):
+    CHUNK_SIZE = 32768
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(CHUNK_SIZE):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
+
+# if __name__=="__main__":
+#     chatbot = ChatBotAI()
+#     chatbot.load_model()
