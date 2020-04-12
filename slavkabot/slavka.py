@@ -1,4 +1,6 @@
+from typing import List
 import random
+from telethon.tl.custom.message import Message
 
 
 class Slavka:
@@ -15,11 +17,11 @@ class Slavka:
     def random_phrase(self):
         return random.choice(self.phrases)
 
-    def respond(self, input_, author):
-        """
-            input_ (str): message text
-            author (str): name of author
-        """
+    def respond(self, context: List[Message]):
+        context = self.parse_context(context)
 
         # TODO: change to sensible response
         return self.random_phrase()
+
+    def parse_context(self, messages: List[Message]) -> List[str]:
+        return ['']
