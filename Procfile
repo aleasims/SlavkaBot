@@ -1,2 +1,2 @@
-web: gunicorn web:app --timeout 300
+web: gunicorn web:app
 bot: run_bot
