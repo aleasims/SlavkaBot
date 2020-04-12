@@ -7,11 +7,19 @@ class Slavka:
             self.phrases = [phrase.strip() for phrase in f.readlines()]
 
     def greeting(self):
-        return "привет, пёс, это Славка!"
+        return "Батя в здании!"
+
+    def welcome(self):
+        return "Добро пожаловать в хату!"
 
     def random_phrase(self):
         return random.choice(self.phrases)
 
+    def respond(self, input_, author):
+        """
+            input_ (str): message text
+            author (str): name of author
+        """
 
-if __name__ == "__main__":
-    print(Slavka().random_phrase())
+        # TODO: change to sensible response
+        return self.random_phrase()

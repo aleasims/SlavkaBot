@@ -1,42 +1,64 @@
+import os
+import asyncio
 import logging
+from telethon import events
 
-from slavka import Slavka
+from slavkabot.slavka import Slavka
+from slavkabot.members import get_member
 
+best_chat = os.getenv('best_chat')
 slavka = Slavka()
+logger = logging.getLogger(__name__)
 
 
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
-logger = logging.getLogger()
+async def greet(event):
+    await event.respond(slavka.greeting())
+    raise events.StopPropagation
 
 
-def start_handler(update, context):
-    id_ = update.effective_user['id']
-    logger.info(f'User {id_} started bot')
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=slavka.greeting())
+async def respond(event):
+    message = event.message.text
+    # remove botname from message text
+    message = message.replace(event.pattern_match.group(1), '').strip()
+    author = get_member(event.message.from_id)
+    await event.respond(slavka.respond(message, author))
+    raise events.StopPropagation
 
 
-def speak_handler(update, context):
-    id_ = update.effective_user['id']
-    phrase = slavka.random_phrase()
-    logger.info(f'User {id_} asked for speak: {phrase}')
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=phrase)
+class Handler:
+    def __init__(self, client):
+        self.client = client
+        for handler in self.get_handlers():
+            client.add_event_handler(handler)
 
+    # @events.register(events.NewMessage(pattern='(?i).*(слав|slav|/speak|@sluvka_bot).*'))
+    # async def _echo(self, event):
+    #     await event.respond(slavka.random_phrase())
+    #     raise events.StopPropagation
 
-from telegram.ext import Handler
+    @events.register(events.NewMessage(pattern='^!'))
+    async def _announce(self, event):
+        await self.client.send_message(best_chat, event.text[1:])
+        raise events.StopPropagation
 
+    @events.register(events.NewMessage(outgoing=True, pattern='ping'))
+    async def _ping(self, event):
+        """Say "pong" whenever you send "ping", then delete both messages."""
+        resp = await event.respond('pong')
+        await asyncio.sleep(5)
+        await self.client.delete_messages(event.chat_id, [event.id, resp.id])
+        raise events.StopPropagation
 
-class VerboseHandler(Handler):
-    """Only loggs incoming update.
+    @events.register(events.ChatAction)
+    async def handler(self, event):
+        """Welcome every new user."""
+        if event.user_joined:
+            await event.reply(slavka.welcome())
 
-    Used only for debug.
-    """
-
-    def check_update(self, update):
-        logger.debug(str(update))
-
-
-def empty_callback(*args, **kwargs):
-    pass
+    def get_handlers(self, mode='all'):
+        if mode == 'all':
+            return [getattr(self, field)
+                    for field in dir(self)
+                    if field[0] == '_' and field[1] != '_']
+        else:
+            return []

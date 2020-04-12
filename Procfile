@@ -1,1 +1,2 @@
-web: python slavkabot/bot.py
+web: gunicorn web:app
+bot: run_bot

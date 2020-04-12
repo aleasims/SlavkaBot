@@ -1,40 +1,47 @@
-import os
-import sys
+import logging
+import telethon as tele
+from telethon.events import NewMessage
 
-from telegram.ext import CommandHandler, Updater
-
-import handlers
-from handlers import logger
-
-mode = os.getenv('MODE')
-TOKEN = os.getenv('TOKEN')
-
-if mode == 'dev':
-    def run(updater):
-        updater.start_polling()
-elif mode == 'heroku':
-    def run(updater):
-        PORT = int(os.environ.get('PORT', '8443'))
-        HEROKU_APP_NAME = os.environ.get('HEROKU_APP_NAME')
-        updater.start_webhook(listen='0.0.0.0',
-                              port=PORT,
-                              url_path=TOKEN)
-        updater.bot.set_webhook(
-            f'https://{HEROKU_APP_NAME}.herokuapp.com/{TOKEN}')
-else:
-    logger.error('No MODE specified!')
-    sys.exit(1)
+from slavkabot import handlers
 
 
-if __name__ == '__main__':
-    logger.info('Starting bot')
-    updater = Updater(TOKEN, use_context=True)
+logger = logging.getLogger(__name__)
 
-    updater.dispatcher.add_handler(
-        CommandHandler('start', handlers.start_handler))
-    updater.dispatcher.add_handler(
-        CommandHandler('speak', handlers.speak_handler))
-    updater.dispatcher.add_handler(
-        handlers.VerboseHandler(handlers.empty_callback))
 
-    run(updater)
+class Bot:
+    def __init__(self, config):
+        logger.info('Initiating bot')
+        self.name = 'sluvka_bot'
+
+        api_id = config['API_ID']
+        api_hash = config['API_HASH']
+
+        if config['USE_PROXY']:
+            conn = tele.connection.ConnectionTcpMTProxyRandomizedIntermediate
+            proxy_address = (config['PROXY_HOST'],
+                             config['PROXY_PORT'],
+                             config['PROXY_SECRET'])
+            logger.info(f'Using proxy {proxy_address[0]}:{proxy_address[1]}')
+
+            self.bot = tele.TelegramClient('bot', api_id, api_hash,
+                                           connection=conn,
+                                           proxy=proxy_address)
+        else:
+            self.bot = tele.TelegramClient('bot', api_id, api_hash)
+
+        self.register_handlers()
+        self.bot.start(bot_token=config['TOKEN'])
+        logger.info('Bot initiated')
+
+        # self.handler = Handler(self.bot)
+
+    def register_handlers(self):
+        logger.info('Registering handlers')
+        self.bot.add_event_handler(handlers.greet,
+                                   NewMessage(pattern='/greet'))
+        self.bot.add_event_handler(handlers.respond,
+                                   NewMessage(pattern=f'.*(@{self.name}).*'))
+
+    def start(self):
+        logger.info('Starting bot')
+        self.bot.run_until_disconnected()
