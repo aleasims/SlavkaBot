@@ -17,7 +17,7 @@ requierments = [
     'youtokentome',
     'regex',
     'transformers',
-    'torch @ https://download.pytorch.org/whl/torch-0.1.10.post1-cp27-none-macosx_10_7_x86_64.whl',
+    'torch @ https://download.pytorch.org/whl/cpu/torch-1.4.0%2Bcpu-cp36-cp36m-linux_x86_64.whl',
 ]
 
 entry_points = {

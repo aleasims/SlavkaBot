@@ -2,7 +2,7 @@ from transformers import (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer)
 import torch
 import torch.nn.functional as F
 from ChatBotAI.yt_encoder import YTEncoder
-import urllib.request
+import requests
 import zipfile
 
 
@@ -10,6 +10,13 @@ FILTER_VALUE = -float('Inf')
 URL_ZIP_MODEL = "https://drive.google.com/open?id=1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
 ZIP_NAME = "model_checkpoint.zip"
 DIR_NAME = 'model_checkpoint'
+
+
+def download_url(url, save_path, chunk_size=128):
+    r = requests.get(url, stream=True)
+    with open(save_path, 'wb') as fd:
+        for chunk in r.iter_content(chunk_size=chunk_size):
+            fd.write(chunk)
 
 
 class ChatBotAI:
@@ -22,8 +29,7 @@ class ChatBotAI:
 
         if model_path == "":
             print("Downloading model...")
-            urllib.request.urlretrieve(URL_ZIP_MODEL, ZIP_NAME)
-
+            download_url(URL_ZIP_MODEL, ZIP_NAME)
             print("Download completed!")
 
             with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
