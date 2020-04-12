@@ -14,7 +14,7 @@ DIR_NAME = 'model_checkpoint'
 
 class ChatBotAI:
     def __init__(self, model_path="", tokenizer_class="YTEncoder",
-                 tokenizer_name="bpe/yt.model", device='cpu'):
+                 tokenizer_name="ChatBotAI/bpe/yt.model", device='cpu'):
         # assert model_path != "", "model_path is empty."
         self.model = None
         self.config = None
