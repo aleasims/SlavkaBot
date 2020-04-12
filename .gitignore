@@ -131,3 +131,5 @@ dmypy.json
 
 slavkabot/chat_history
 external/
+*.zip
+
