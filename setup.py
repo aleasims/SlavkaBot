@@ -14,7 +14,6 @@ requierments = [
     'Telethon',
     'gunicorn',
     'flask',
-    'torch==1.4.0+cpu',
     'youtokentome',
     'regex',
     'transformers'
