@@ -2,6 +2,11 @@ import logging
 import zipfile
 
 import requests
+<<<<<<< HEAD
+=======
+from google_drive_downloader import GoogleDriveDownloader as gdd
+import threading
+>>>>>>> 048a5c65f41e2cb1e73ab6e6f62ee9ce8d859eba
 
 import torch
 import torch.nn.functional as F
@@ -11,8 +16,8 @@ from transformers import GPT2Config, GPT2LMHeadModel, GPT2Tokenizer
 FILTER_VALUE = -float('Inf')
 URL_ZIP_MODEL = "https://drive.google.com/open?id=1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
 ID_GOOGLE_FILE = "1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
-ZIP_NAME = "model_checkpoint.zip"
-DIR_NAME = 'model_checkpoint'
+ZIP_NAME = "./ChatBotAI/model_checkpoint.zip"
+DIR_NAME = './ChatBotAI/model_checkpoint'
 
 logger = logging.getLogger(__name__)
 
