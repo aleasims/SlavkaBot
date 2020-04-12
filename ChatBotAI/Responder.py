@@ -11,8 +11,8 @@ import time
 FILTER_VALUE = -float('Inf')
 URL_ZIP_MODEL = "https://drive.google.com/open?id=1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
 ID_GOOGLE_FILE = "1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
-ZIP_NAME = "model_checkpoint.zip"
-DIR_NAME = 'model_checkpoint'
+ZIP_NAME = "/ChatBotAI/model_checkpoint.zip"
+DIR_NAME = '/ChatBotAI/model_checkpoint'
 
 
 class ChatBotAI:
