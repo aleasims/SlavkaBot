@@ -16,7 +16,11 @@ class ChatBotAI:
     def __init__(self, model_path="", tokenizer_class="YTEncoder",
                  tokenizer_name="external/gpt2_third_partybpe/yt.model", device='cpu'):
         # assert model_path != "", "model_path is empty."
-        if model_path == "" and self.model is None:
+        self.model = None
+        self.config = None
+        self.tokenizer = None
+
+        if model_path == "":
             print("Downloading model...")
             urllib.request.urlretrieve(URL_ZIP_MODEL, ZIP_NAME)
             with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
@@ -26,10 +30,6 @@ class ChatBotAI:
             print("Download completed!")
 
         self.model_path = model_path
-
-        self.model = None
-        self.config = None
-        self.tokenizer = None
 
         self.model_class = GPT2LMHeadModel
         self.config_class = GPT2Config
