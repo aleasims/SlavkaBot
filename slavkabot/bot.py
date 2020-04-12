@@ -1,49 +1,38 @@
-import os
-import sys
 import logging
-
 import telethon as tele
 
 from slavkabot.handlers import Handler
 
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
-logger = logging.getLogger()
+
+logger = logging.getLogger(__name__)
 
 
 class Bot:
-    def __init__(self):
-        mode = os.getenv('mode')
-        bot_token = os.getenv('token')
-        api_id = os.getenv('api_id')
-        api_hash = os.getenv('api_hash')
-        mode = os.getenv('mode')
+    def __init__(self, config):
+        logger.info('Initiating bot')
 
-        if mode == 'dev':
-            proxy_hostname = os.getenv('proxy_hostname')
-            proxy_port = int(os.getenv('proxy_port'))
-            proxy_secret = os.getenv('proxy_secret')
+        api_id = config['API_ID']
+        api_hash = config['API_HASH']
+        token = config['TOKEN']
 
+        if config['USE_PROXY']:
             conn = tele.connection.ConnectionTcpMTProxyRandomizedIntermediate
+            proxy_address = (config['PROXY_HOST'],
+                             config['PROXY_PORT'],
+                             config['PROXY_SECRET'])
+            logger.info(f'Using proxy {proxy_address[0]}:{proxy_address[1]}')
 
             self.bot = tele.TelegramClient('bot', api_id, api_hash,
                                            connection=conn,
-                                           proxy=(proxy_hostname,
-                                                  proxy_port,
-                                                  proxy_secret))
-
-        elif mode == 'heroku':
-            self.bot = tele.TelegramClient('bot', api_id, api_hash)
-            logger.info('A'*100)
-            logger.info(self.bot.session)
-            logger.info(self.bot.session.port)
-            logger.info(self.bot.session.server_address)
+                                           proxy=proxy_address)
         else:
-            logger.error('No mode specified!')
-            sys.exit(1)
+            self.bot = tele.TelegramClient('bot', api_id, api_hash)
 
-        self.bot.start(bot_token=bot_token)
+        self.bot.start(bot_token=token)
+        logger.info('Bot initiated')
+
         self.Handler = Handler(self.bot)
 
     def start(self):
+        logger.info('Starting bot')
         self.bot.run_until_disconnected()
