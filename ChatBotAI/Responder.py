@@ -2,7 +2,6 @@ import logging
 import zipfile
 
 import requests
-from google_drive_downloader import GoogleDriveDownloader as gdd
 
 import torch
 import torch.nn.functional as F
@@ -27,11 +26,6 @@ class ChatBotAI:
         self.tokenizer = None
 
         if model_path == "":
-            logger.info("Downloading model...")
-            gdd.download_file_from_google_drive(file_id=ID_GOOGLE_FILE,
-                                                dest_path=f'./{ZIP_NAME}')
-            logger.info("Download completed!")
-
             with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
                 zip_ref.extractall(DIR_NAME)
                 model_path = DIR_NAME
