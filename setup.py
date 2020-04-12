@@ -14,7 +14,7 @@ requierments = [
     'Telethon',
     'gunicorn',
     'flask',
-    'torch==1.4.0+cpu torchvision==0.5.0+cpu -f https://download.pytorch.org/whl/torch_stable.html',
+    'torch==1.4.0+cpu',
     'youtokentome',
     'regex',
     'transformers'
@@ -34,6 +34,9 @@ setup(
     packages=['slavkabot', 'web'],
     package_dir={'slavkabot': 'slavkabot', 'web': 'web'},
     python_requires='>=3.5',
+    dependency_links=[
+        "https://download.pytorch.org/whl/torch_stable.html",
+    ],
     install_requires=requierments,
     entry_points=entry_points
 )
