@@ -3,6 +3,7 @@ import zipfile
 
 import requests
 from google_drive_downloader import GoogleDriveDownloader as gdd
+import threading
 
 import torch
 import torch.nn.functional as F
@@ -12,8 +13,8 @@ from transformers import GPT2Config, GPT2LMHeadModel, GPT2Tokenizer
 FILTER_VALUE = -float('Inf')
 URL_ZIP_MODEL = "https://drive.google.com/open?id=1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
 ID_GOOGLE_FILE = "1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
-ZIP_NAME = "/ChatBotAI/model_checkpoint.zip"
-DIR_NAME = '/ChatBotAI/model_checkpoint'
+ZIP_NAME = "./ChatBotAI/model_checkpoint.zip"
+DIR_NAME = './ChatBotAI/model_checkpoint'
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +29,15 @@ class ChatBotAI:
 
         if model_path == "":
             logger.info("Downloading model...")
-            gdd.download_file_from_google_drive(file_id=ID_GOOGLE_FILE,
-                                                dest_path=f'./{ZIP_NAME}')
+            # gdd.download_file_from_google_drive(file_id=ID_GOOGLE_FILE,
+            #                                     dest_path=f'./{ZIP_NAME}')
+            #
+            # with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
+            #     zip_ref.extractall(DIR_NAME)
+            #     model_path = DIR_NAME
+            ThreadingExample(ID_GOOGLE_FILE, ZIP_NAME, DIR_NAME)
             logger.info("Download completed!")
 
-            with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
-                zip_ref.extractall(DIR_NAME)
-                model_path = DIR_NAME
 
         self.model_path = DIR_NAME
 
