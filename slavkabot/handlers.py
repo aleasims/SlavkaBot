@@ -8,26 +8,26 @@ best_chat = os.getenv('best_chat')
 slavka = Slavka()
 
 
+async def greet(event):
+    await event.respond(slavka.greeting())
+    raise events.StopPropagation
+
+
+async def respond(event):
+    await event.respond(slavka.random_phrase())
+    raise events.StopPropagation
+
+
 class Handler:
     def __init__(self, client):
         self.client = client
         for handler in self.get_handlers():
             client.add_event_handler(handler)
 
-    @events.register(events.NewMessage(pattern='/greet'))
-    async def _greet(self, event):
-        await event.respond(slavka.greeting())
-        raise events.StopPropagation
-
     # @events.register(events.NewMessage(pattern='(?i).*(слав|slav|/speak|@sluvka_bot).*'))
     # async def _echo(self, event):
     #     await event.respond(slavka.random_phrase())
     #     raise events.StopPropagation
-
-    @events.register(events.NewMessage(pattern='.*@sluvka_bot.*'))
-    async def _respond(self, event):
-        await event.respond(slavka.random_phrase())
-        raise events.StopPropagation
 
     @events.register(events.NewMessage(pattern='^!'))
     async def _announce(self, event):
