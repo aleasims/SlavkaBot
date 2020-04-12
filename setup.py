@@ -14,6 +14,10 @@ requierments = [
     'Telethon',
     'gunicorn',
     'flask',
+    'torch',
+    'youtokentome',
+    'regex',
+    'transformers'
 ]
 
 entry_points = {
