@@ -39,7 +39,6 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
-slavkabot/chat_history
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -128,3 +127,6 @@ dmypy.json
 
 #telethon
 *.session*
+
+
+slavkabot/chat_history
