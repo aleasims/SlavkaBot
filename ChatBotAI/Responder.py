@@ -7,7 +7,7 @@ import zipfile
 
 
 FILTER_VALUE = -float('Inf')
-URL_ZIP_MODEL = "https://drive.google.com/file/d/1FR72Ib40V0nXxfH__x91NWGsy13hzcs5/view?usp=sharing"
+URL_ZIP_MODEL = "https://drive.google.com/open?id=1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
 ZIP_NAME = "model_checkpoint.zip"
 DIR_NAME = 'model_checkpoint'
 
