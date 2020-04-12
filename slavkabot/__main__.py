@@ -1,5 +1,5 @@
-from slavkabot.config import build_config
-from slavkabot.bot import Bot
+from .config import build_config
+from .bot import Bot
 
 
 if __name__ == "__main__":

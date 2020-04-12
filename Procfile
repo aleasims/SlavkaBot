@@ -1,2 +1,2 @@
-web: python web.py
-bot: python main.py
+web: gunicorn web:app
+bot: python slavkabot
