@@ -36,6 +36,8 @@ setup(
     python_requires='>=3.5',
     dependency_links=[
         "https://download.pytorch.org/whl/torch_stable.html",
+        "https://download.pytorch.org/whl/torch_stable/",
+        "https://download.pytorch.org/whl/torch_stable/cpu/"
     ],
     install_requires=requierments,
     entry_points=entry_points
