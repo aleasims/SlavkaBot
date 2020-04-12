@@ -40,7 +40,7 @@ class Bot:
         self.bot.add_event_handler(handlers.greet,
                                    NewMessage(pattern='/greet'))
         self.bot.add_event_handler(handlers.respond,
-                                   NewMessage(pattern=f'.*@{self.name}.*'))
+                                   NewMessage(pattern=f'.*(@{self.name}).*'))
 
     def start(self):
         logger.info('Starting bot')
