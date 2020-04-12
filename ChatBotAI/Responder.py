@@ -149,7 +149,7 @@ def get_confirm_token(response):
 
 
 def save_response_content(response, destination):
-    CHUNK_SIZE = 32768
+    CHUNK_SIZE = 3276
     with open(destination, "wb") as f:
         for chunk in response.iter_content(CHUNK_SIZE):
             if chunk:  # filter out keep-alive new chunks
