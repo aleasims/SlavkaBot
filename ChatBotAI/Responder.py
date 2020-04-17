@@ -2,11 +2,8 @@ import logging
 import zipfile
 
 import requests
-<<<<<<< HEAD
-=======
 from google_drive_downloader import GoogleDriveDownloader as gdd
 import threading
->>>>>>> 048a5c65f41e2cb1e73ab6e6f62ee9ce8d859eba
 
 import torch
 import torch.nn.functional as F
@@ -180,7 +177,3 @@ class ThreadingExample(object):
         download_file_from_google_drive(self.id_google, self.dest_path_zip)
         with zipfile.ZipFile(self.dest_path_zip, 'r') as zip_ref:
             zip_ref.extractall(self.dest_path)
-
-# if __name__=="__main__":
-#     chatbot = ChatBotAI()
-#     chatbot.load_model()
