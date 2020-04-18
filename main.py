@@ -7,6 +7,11 @@ import os
 def main():
     config = build_config()
     logger = logging.getLogger(__name__)
-    logger.info(f'CWD={os.getcwd()}')
+    path = os.getcwd()
+    logger.info(f'CWD={path}')
     bot = Bot(config)
     bot.start()
+
+
+if __name__ == '__main__':
+    main()
