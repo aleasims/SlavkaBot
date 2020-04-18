@@ -6,7 +6,6 @@ from telethon.tl.custom import Message
 
 from slavkabot.members import get_member
 from ChatBotAI.Responder import ChatBotAI
-from os import path
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,13 @@ class Slavka:
         with open(phrases, 'r', encoding='utf-8') as f:
             self.phrases = [phrase.strip() for phrase in f.readlines()]
 
-        self.chat_bot_ai = ChatBotAI()
+        try:
+            self.chat_bot_ai = ChatBotAI()
+            self.model_loaded = True
+        except Exception as e:
+            logger.warn(f'Error during ChatBotAI initialization: {e}')
+            logger.warn(f'Using random sampling instead ChatBotAI')
+            self.model_loaded = False
 
     def greeting(self):
         return "Батя в здании!"
@@ -29,11 +34,10 @@ class Slavka:
         return random.choice(self.phrases)
 
     def respond(self, context: List[Message], botname: str):
-        context = self.parse_context(context, botname)
-        logger.debug(f'Feeding context: {context}')
+        if self.model_loaded:
+            context = self.parse_context(context, botname)
+            logger.debug(f'Feeding context: {context}')
 
-        if path.exists(self.chat_bot_ai.model_path):
-            self.chat_bot_ai.load_model()
             out_text = self.chat_bot_ai.respond(context)
             # TODO: Filter out_text till Slavka's response
             filter_idx = out_text.find('EOM')
@@ -43,19 +47,17 @@ class Slavka:
         else:
             return self.random_phrase()
 
-    def parse_context(self,
-                      messages: List[Message],
-                      botname: str = '') -> str:
+    def parse_context(self, messages: List[Message], botname: str = '') -> str:
         """
-        Example output:
-        'Евгин: привет [EOM}
+        Example return:
+        'Евгин: привет [EOM]
         Борз: привет
         как дела? [EOM]'
 
-        Output if messages is empty: ''
+        Return '', if messages is empty
         """
 
-        assert len(messages) <= self.context_size
+        assert len(messages) <= self.context_size, 'Too long context'
 
         if messages:
             context = ""

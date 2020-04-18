@@ -1,9 +1,4 @@
 import logging
-import zipfile
-
-import requests
-from google_drive_downloader import GoogleDriveDownloader as gdd
-import threading
 
 import torch
 import torch.nn.functional as F
@@ -11,47 +6,45 @@ from ChatBotAI.yt_encoder import YTEncoder
 from transformers import GPT2Config, GPT2LMHeadModel, GPT2Tokenizer
 
 FILTER_VALUE = -float('Inf')
-URL_ZIP_MODEL = "https://drive.google.com/open?id=1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
-ID_GOOGLE_FILE = "1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
-ZIP_NAME = "./ChatBotAI/model_checkpoint.zip"
-DIR_NAME = './ChatBotAI/model_checkpoint'
+MODEL_PATH = './ChatBotAI/model_checkpoint'
 
 logger = logging.getLogger(__name__)
 
 
 class ChatBotAI:
-    def __init__(self, model_path="", tokenizer_class="YTEncoder",
-                 tokenizer_name="ChatBotAI/bpe/yt.model", device='cpu'):
-        # assert model_path != "", "model_path is empty."
-        self.model = None
-        self.config = None
-        self.tokenizer = None
-
-        if model_path == "":
-            with zipfile.ZipFile(ZIP_NAME, 'r') as zip_ref:
-                zip_ref.extractall(DIR_NAME)
-                model_path = DIR_NAME
-
-        self.model_path = DIR_NAME
-
+    def __init__(self, model_path=MODEL_PATH, tokenizer_cls="YTEncoder",
+                 tokenizer_path="ChatBotAI/bpe/yt.model", device='cpu'):
+        self.model_path = model_path
         self.model_class = GPT2LMHeadModel
         self.config_class = GPT2Config
+        logger.debug(f'Model path: {self.model_path}')
 
-        # TODO:
-        # Train own tokenizer
-        self.tokenizer_class = YTEncoder if tokenizer_class == "YTEncoder" else GPT2Tokenizer
-        self.tokenizer_name = tokenizer_name if tokenizer_name else self.model_path
+        # TODO: Train own tokenizer
+        self.tokenizer_cls = YTEncoder if tokenizer_cls == "YTEncoder" \
+            else GPT2Tokenizer
+        logger.debug(f'Tokenizer: {self.tokenizer_cls}')
+
+        self.tokenizer_path = tokenizer_path if tokenizer_path \
+            else self.model_path
 
         self.device = device
         self.max_input = 1023
 
-    def load_model(self):
-        self.tokenizer = self.tokenizer_class.from_pretrained(self.tokenizer_name)
-        self.max_input = min(self.tokenizer.max_len_single_sentence, self.max_input)
+        logger.debug(f'Loading tokenizer from {self.tokenizer_path}')
+        self.tokenizer = self.tokenizer_cls.from_pretrained(
+            self.tokenizer_path)
+        self.max_input = min(self.tokenizer.max_len_single_sentence,
+                             self.max_input)
+
+        logger.debug(f'Loading config from {self.model_path}')
         self.config = self.config_class.from_pretrained(self.model_path)
 
-        self.model = self.model_class.from_pretrained(self.model_path, config=self.config)
+        logger.debug(f'Loading config from {self.model_path}')
+        self.model = self.model_class.from_pretrained(self.model_path,
+                                                      config=self.config)
         self.model.to(self.device)
+
+        logger.debug(f'Model eval')
         self.model.eval()
 
     def respond(self, context=""):
@@ -73,6 +66,7 @@ class ChatBotAI:
         return out_text
 
 
+# PROBABLY OBSOLETE CODE:
 def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
     """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
         Args:
@@ -130,50 +124,3 @@ def sample_sequence(model, length, context, num_samples=1, temperature=1.0, top_
 
             generated = torch.cat((generated, next_tokens.unsqueeze(-1)), dim=1)
     return generated
-
-
-def download_file_from_google_drive(id, destination):
-    URL = "https://docs.google.com/uc?export=download"
-    session = requests.Session()
-    response = session.get(URL, params={'id': id}, stream=True)
-    token = get_confirm_token(response)
-    if token:
-        params = {'id': id, 'confirm': token}
-        response = session.get(URL, params=params, stream=True)
-    save_response_content(response, destination)
-
-
-def get_confirm_token(response):
-    for key, value in response.cookies.items():
-        if key.startswith('download_warning'):
-            return value
-    return None
-
-
-def save_response_content(response, destination):
-    CHUNK_SIZE = 3276
-    with open(destination, "wb") as f:
-        for chunk in response.iter_content(CHUNK_SIZE):
-            if chunk:  # filter out keep-alive new chunks
-                f.write(chunk)
-
-
-class ThreadingExample(object):
-    """ Threading example class
-    The run() method will be started and it will run in the background
-    until the application exits.
-    """
-    def __init__(self, id_google="", dest_path_zip="", dest_path=""):
-        self.id_google = id_google
-        self.dest_path_zip = dest_path_zip
-        self.dest_path = dest_path
-
-        thread = threading.Thread(target=self.run, args=())
-        thread.daemon = True                            # Daemonize thread
-        thread.start()                                  # Start the execution
-
-    def run(self):
-        """ Method that runs forever """
-        download_file_from_google_drive(self.id_google, self.dest_path_zip)
-        with zipfile.ZipFile(self.dest_path_zip, 'r') as zip_ref:
-            zip_ref.extractall(self.dest_path)
