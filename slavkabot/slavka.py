@@ -19,6 +19,7 @@ class Slavka:
         try:
             self.chat_bot_ai = ChatBotAI()
             self.model_loaded = True
+            logger.info('ChatBotAI loaded')
         except Exception as e:
             logger.warn(f'Error during ChatBotAI initialization: {e}')
             logger.warn(f'Using random sampling instead ChatBotAI')
@@ -36,9 +37,11 @@ class Slavka:
     def respond(self, context: List[Message], botname: str):
         if self.model_loaded:
             context = self.parse_context(context, botname)
-            logger.debug(f'Feeding context: {context}')
+            logger.info(f'Feeding context: {context}')
 
             out_text = self.chat_bot_ai.respond(context)
+
+            logger.info(f'Generated response: {out_text}')
             # TODO: Filter out_text till Slavka's response
             filter_idx = out_text.find('EOM')
             if filter_idx > 2:

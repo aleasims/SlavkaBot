@@ -17,12 +17,12 @@ class ChatBotAI:
         self.model_path = model_path
         self.model_class = GPT2LMHeadModel
         self.config_class = GPT2Config
-        logger.debug(f'Model path: {self.model_path}')
+        logger.info(f'Model path: {self.model_path}')
 
         # TODO: Train own tokenizer
         self.tokenizer_cls = YTEncoder if tokenizer_cls == "YTEncoder" \
             else GPT2Tokenizer
-        logger.debug(f'Tokenizer: {self.tokenizer_cls}')
+        logger.info(f'Tokenizer: {self.tokenizer_cls}')
 
         self.tokenizer_path = tokenizer_path if tokenizer_path \
             else self.model_path
@@ -30,21 +30,21 @@ class ChatBotAI:
         self.device = device
         self.max_input = 1023
 
-        logger.debug(f'Loading tokenizer from {self.tokenizer_path}')
+        logger.info(f'Loading tokenizer from {self.tokenizer_path}')
         self.tokenizer = self.tokenizer_cls.from_pretrained(
             self.tokenizer_path)
         self.max_input = min(self.tokenizer.max_len_single_sentence,
                              self.max_input)
 
-        logger.debug(f'Loading config from {self.model_path}')
+        logger.info(f'Loading config from {self.model_path}')
         self.config = self.config_class.from_pretrained(self.model_path)
 
-        logger.debug(f'Loading config from {self.model_path}')
+        logger.info(f'Loading config from {self.model_path}')
         self.model = self.model_class.from_pretrained(self.model_path,
                                                       config=self.config)
         self.model.to(self.device)
 
-        logger.debug(f'Model eval')
+        logger.info(f'Model eval')
         self.model.eval()
 
     def respond(self, context=""):
