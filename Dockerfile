@@ -12,4 +12,4 @@ COPY ./env_vars.txt /app/
 
 ADD . /app
 
-CMD [ "python", "slavkabot/main.py" ]
+CMD [ "python", "main.py" ]
