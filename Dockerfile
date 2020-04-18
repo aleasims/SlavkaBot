@@ -1,15 +1,12 @@
-FROM python:3
+FROM python:3.8
 
-RUN mkdir /app
+COPY ./requirements.txt /requirements.txt
 
-WORKDIR /app
-
-COPY ./requirements.txt /app/
+WORKDIR /
 
 RUN pip install -r requirements.txt --no-cache-dir
 
-COPY ./env_vars.txt /app/
-
-ADD . /app
+COPY . /
 
 CMD [ "python", "main.py" ]
+ 
