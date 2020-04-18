@@ -36,21 +36,19 @@ class ChatBotAI:
         self.max_input = min(self.tokenizer.max_len_single_sentence,
                              self.max_input)
 
-        logger.info(f'Loading config from {self.model_path}')
         self.config = self.config_class.from_pretrained(self.model_path)
 
-        logger.info(f'Loading config from {self.model_path}')
         self.model = self.model_class.from_pretrained(self.model_path,
                                                       config=self.config)
         self.model.to(self.device)
 
-        logger.info(f'Model eval')
         self.model.eval()
 
     def respond(self, context=""):
         self.model.eval()
 
         context_tokens = self.tokenizer.encode(context)
+        logger.info('Tokenized')
         out = sample_sequence(
             model=self.model,
             context=context_tokens,
@@ -61,6 +59,7 @@ class ChatBotAI:
             device=self.device,
             max_input=self.max_input
         )
+        logger.info('Sampled')
         out = out[0, len(context_tokens):].tolist()
         out_text = self.tokenizer.decode(out)
         return out_text
@@ -104,12 +103,13 @@ def sample_sequence(model, length, context, num_samples=1, temperature=1.0, top_
     context = context.unsqueeze(0).repeat(num_samples, 1)
     generated = context
     with torch.no_grad():
-        for _ in range(length):
-
+        for i in range(length):
+            logger.debug(f'Iteration {i} of {length}...')
             inputs = {'input_ids': generated[:, -max_input:]}
 
-            outputs = model(
-                **inputs)  # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet (cached hidden-states)
+            # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet (cached hidden-states)
+            outputs = model(**inputs)
+
             next_tokens = torch.zeros(num_samples, dtype=torch.long).to(device)
             for isample in range(num_samples):
                 next_token_logits = outputs[0][isample, -1, :] / temperature
