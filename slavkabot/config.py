@@ -1,6 +1,5 @@
 import os
 import logging
-from google_drive_downloader import GoogleDriveDownloader as gdd
 
 
 def config_logger(level=logging.INFO):
@@ -70,17 +69,3 @@ def build_proxy_config():
         return config
 
     return {'USE_PROXY': False}
-
-
-def download_model():
-    import logging
-    logger = logging.getLogger(__name__)
-
-    ID_GOOGLE_FILE = "1FR72Ib40V0nXxfH__x91NWGsy13hzcs5"
-
-    logger.info("Downloading model...")
-    gdd.download_file_from_google_drive(
-        ID_GOOGLE_FILE, './data/model_checkpoint.zip')
-    logger.info("Download completed!")
-    files = os.listdir()
-    logger.info(f"Dir: {files}")

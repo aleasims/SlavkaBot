@@ -1,9 +1,12 @@
-from slavkabot.config import build_config, download_model
+from slavkabot.config import build_config
 from slavkabot.bot import Bot
+import logging
+import os
 
 
 def main():
     config = build_config()
-    download_model()
+    logger = logging.getLogger(__name__)
+    logger.info(f'CWD={os.getcwd()}')
     bot = Bot(config)
     bot.start()
