@@ -52,7 +52,7 @@ class ChatBotAI:
         out = sample_sequence(
             model=self.model,
             context=context_tokens,
-            length=50,
+            length=10,
             temperature=1.0,
             top_k=50,
             top_p=0.9,
