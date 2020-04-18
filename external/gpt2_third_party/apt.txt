@@ -1,5 +1,0 @@
-xsltproc
-cmake 
-build-essential 
-pkg-config 
-libgoogle-perftools-dev
