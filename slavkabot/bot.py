@@ -3,6 +3,7 @@ import logging
 import telethon as tele
 
 from slavkabot.handler import Handler
+from slavkabot.state import BotState
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +34,18 @@ class Bot:
         self.client.start(bot_token=config['TOKEN'])
         logger.info('Started Telegram Client')
 
-        logger.info('Registering handlers')
         self.handler = Handler(self)
+        for handler in self.handler.handlers():
+            self.client.add_event_handler(handler)
+        logger.info('Registered handlers')
 
-        logger.info('Bot initiated')
+        self.state = BotState.IDLE
+        logger.info(f'Bot initiated')
+
+    def chage_state(self, state):
+        self.state = state
+        logger.debug(f'Bot state changed to {state}')
 
     def start(self):
-        logger.info('Starting bot')
+        logger.info(f'Starting bot ({self.state})')
         self.client.run_until_disconnected()

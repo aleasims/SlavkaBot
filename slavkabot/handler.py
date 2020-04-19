@@ -1,39 +1,49 @@
 import logging
+from collections import deque
 
 from telethon import events
 from telethon.events import NewMessage
-from telethon.errors.rpcerrorlist import BotMethodInvalidError
 
 from slavkabot.slavka import Slavka
+from slavkabot.state import BotState
 
 logger = logging.getLogger(__name__)
 
 
 class Handler:
-    def __init__(self, bot):
+    BOT_NAME = ''
+
+    def __init__(self, bot, cache_size=10):
         self.bot = bot
-        self.slavka = Slavka()
-        for event, handler in self.handlers():
-            self.bot.client.add_event_handler(handler, event)
+        Handler.BOT_NAME = self.bot.name
+        self.cache_size = cache_size
+
+        self.slavka = Slavka(context_size=self.cache_size)
+        self.cache = deque(maxlen=self.cache_size)
+
+        for handler in self.handlers():
+            self.bot.client.add_event_handler(handler)
 
     def handlers(self):
-        yield from {
-            NewMessage(pattern='/greet'): self.greet,
-            NewMessage(pattern=f'.*(@{self.bot.name}).*'): self.respond
-        }.items()
+        return [
+            self.greet,
+            self.cache,
+            self.respond,
+        ]
 
+    @events.register(NewMessage(pattern='/greet'))
     async def greet(self, event):
         await event.respond(self.slavka.greeting())
         raise events.StopPropagation
 
-    async def respond(self, event):
-        try:
-            context = await self.bot.client.get_messages(
-                self.bot.chat_id, limit=self.slavka.context_size)
-        except BotMethodInvalidError as err:
-            # Chat history is not available to bots with privacy mode.
-            logger.warn(f'Cannot obtain chat history: {err}. Using only received message.')
-            context = [event.message]
+    @events.register(NewMessage())
+    async def cache(self, event):
+        self.cache.append(event.message)
+        logger.debug(f'Cached entity {self.message}')
 
-        await event.respond(self.slavka.respond(context, self.bot.name))
+    @events.register(NewMessage(pattern=f'.*(@{BOT_NAME}).*'))
+    async def respond(self, event):
+        self.bot.chage_state(BotState.DIALOG)
+        await event.respond(self.slavka.respond(self.cache,
+                                                self.BOT_NAME))
         raise events.StopPropagation
