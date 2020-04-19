@@ -1,5 +1,5 @@
 import logging
-# from collections import deque
+from collections import deque
 
 from telethon import events
 from telethon.events import NewMessage
@@ -17,8 +17,8 @@ class Handler:
         self.bot = bot
         Handler.BOT_NAME = self.bot.name
         self.cache_size = cache_size
-        self.cached_messages = []
 
+        self.cached = deque(maxlen=self.cache_size)
         self.slavka = Slavka(context_size=self.cache_size)
 
     def handlers(self):
@@ -35,12 +35,12 @@ class Handler:
 
     @events.register(NewMessage())
     async def cache(self, event):
+        self.cached.append(event.message)
         logger.debug(f'Cached entity {event.message}')
 
     @events.register(NewMessage(pattern=f'.*(@{BOT_NAME}).*'))
     async def respond(self, event):
-        logger.debug('Respond handler called')
         self.bot.chage_state(BotState.DIALOG)
-        await event.respond(self.slavka.respond([event.message],
+        await event.respond(self.slavka.respond(list(self.cached),
                                                 self.BOT_NAME))
         raise events.StopPropagation
