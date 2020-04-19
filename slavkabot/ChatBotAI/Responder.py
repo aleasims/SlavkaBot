@@ -2,18 +2,21 @@ import logging
 
 import torch
 import torch.nn.functional as F
-from ChatBotAI.yt_encoder import YTEncoder
 from transformers import GPT2Config, GPT2LMHeadModel, GPT2Tokenizer
 
+from slavkabot.ChatBotAI.yt_encoder import YTEncoder
+
 FILTER_VALUE = -float('Inf')
-MODEL_PATH = './ChatBotAI/model_checkpoint'
+MAX_INPUT = 1023
+MODEL_PATH = './slavkabot/ChatBotAI/model_checkpoint'
 
 logger = logging.getLogger(__name__)
 
 
 class ChatBotAI:
     def __init__(self, model_path=MODEL_PATH, tokenizer_cls="YTEncoder",
-                 tokenizer_path="ChatBotAI/bpe/yt.model", device='cpu'):
+                 tokenizer_path="slavkabot/ChatBotAI/bpe/yt.model",
+                 device='cpu'):
         self.model_path = model_path
         self.model_class = GPT2LMHeadModel
         self.config_class = GPT2Config
@@ -27,28 +30,24 @@ class ChatBotAI:
         self.tokenizer_path = tokenizer_path if tokenizer_path \
             else self.model_path
 
-        self.device = device
-        self.max_input = 1023
-
         logger.info(f'Loading tokenizer from {self.tokenizer_path}')
         self.tokenizer = self.tokenizer_cls.from_pretrained(
             self.tokenizer_path)
-        self.max_input = min(self.tokenizer.max_len_single_sentence,
-                             self.max_input)
+
+        self.device = device
+        self.max_input = min(self.tokenizer.max_len_single_sentence, MAX_INPUT)
 
         self.config = self.config_class.from_pretrained(self.model_path)
 
         self.model = self.model_class.from_pretrained(self.model_path,
                                                       config=self.config)
         self.model.to(self.device)
-
         self.model.eval()
 
     def respond(self, context=""):
         self.model.eval()
 
         context_tokens = self.tokenizer.encode(context)
-        logger.info('Tokenized')
         out = sample_sequence(
             model=self.model,
             context=context_tokens,
@@ -59,13 +58,11 @@ class ChatBotAI:
             device=self.device,
             max_input=self.max_input
         )
-        logger.info('Sampled')
         out = out[0, len(context_tokens):].tolist()
         out_text = self.tokenizer.decode(out)
         return out_text
 
 
-# PROBABLY OBSOLETE CODE:
 def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
     """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
         Args:
@@ -104,7 +101,6 @@ def sample_sequence(model, length, context, num_samples=1, temperature=1.0, top_
     generated = context
     with torch.no_grad():
         for i in range(length):
-            logger.debug(f'Iteration {i} of {length}...')
             inputs = {'input_ids': generated[:, -max_input:]}
 
             # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet (cached hidden-states)

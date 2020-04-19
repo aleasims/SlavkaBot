@@ -4,14 +4,11 @@ import logging
 import os
 
 
-def main():
+if __name__ == '__main__':
     config = build_config()
+
     logger = logging.getLogger(__name__)
-    path = os.getcwd()
-    logger.info(f'CWD={path}')
+    logger.info(f'CWD={os.getcwd()}')
+
     bot = Bot(config)
     bot.start()
-
-
-if __name__ == '__main__':
-    main()
