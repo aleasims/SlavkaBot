@@ -34,12 +34,14 @@ class Bot:
         self.client.start(bot_token=config['TOKEN'])
         logger.info('Started Telegram Client')
 
-        self.handler = Handler(self)
+        self.handler = Handler(self, cache_size=10)
         for handler in self.handler.handlers():
             self.client.add_event_handler(handler)
         logger.info('Registered handlers')
 
         self.state = BotState.IDLE
+        self.dialog_timeout = 60  # 1 min
+        self.last_checkout = 0
         logger.info(f'Bot initiated')
 
     def chage_state(self, state):

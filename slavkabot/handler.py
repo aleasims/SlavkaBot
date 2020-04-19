@@ -1,4 +1,5 @@
 import logging
+import time
 from collections import deque
 
 from telethon import events
@@ -24,9 +25,15 @@ class Handler:
     def handlers(self):
         return [
             self.greet,
+            self.checkout_state,
             self.cache,
+            self.init_dialog,
             self.respond,
         ]
+
+    @staticmethod
+    def now():
+        return time.time()
 
     @events.register(NewMessage(pattern='/greet'))
     async def greet(self, event):
@@ -38,9 +45,21 @@ class Handler:
         self.cached.append(event.message)
         logger.debug(f'Cached entity {event.message}')
 
+    @events.register(NewMessage())
+    async def checkout_state(self, event):
+        passed = self.now() - self.bot.last_checkout
+        if passed > self.bot.dialog_timeout and \
+                self.bot.state == BotState.DIALOG:
+            self.bot.change_state(BotState.IDLE)
+
     @events.register(NewMessage(pattern=f'.*(@{BOT_NAME}).*'))
-    async def respond(self, event):
+    async def init_dialog(self, event):
         self.bot.chage_state(BotState.DIALOG)
-        await event.respond(self.slavka.respond(list(self.cached),
-                                                self.BOT_NAME))
+
+    @events.register(NewMessage())
+    async def respond(self, event):
+        self.bot.last_checkout = self.now()
+        if self.bot.state == BotState.DIALOG:
+            await event.respond(self.slavka.respond(list(self.cached),
+                                                    self.BOT_NAME))
         raise events.StopPropagation
