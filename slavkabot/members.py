@@ -55,4 +55,8 @@ def get_member(key: Union[int, str]) -> Member:
         if id_ == key:
             return members[name]
 
-    raise KeyError('Member not found')
+    # raise KeyError('Member not found')
+    # TODO: create default member
+    # For now Жак will be default member
+
+    return members['Жак']

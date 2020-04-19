@@ -55,11 +55,11 @@ class Handler:
 
     @events.register(NewMessage(pattern=f'.*(@{BOT_NAME}).*'))
     async def init_dialog(self, event):
-        self.bot.chage_state(BotState.DIALOG)
+        self.bot.change_state(BotState.DIALOG)
 
     @events.register(NewMessage(pattern='/stfu'))
     async def stop_dialog(self, event):
-        self.bot.chage_state(BotState.IDLE)
+        self.bot.change_state(BotState.IDLE)
         raise events.StopPropagation
 
     @events.register(NewMessage())

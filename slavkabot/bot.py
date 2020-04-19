@@ -44,7 +44,7 @@ class Bot:
         self.last_checkout = 0
         logger.info(f'Bot initiated')
 
-    def chage_state(self, state):
+    def change_state(self, state):
         self.state = state
         logger.debug(f'Bot state changed to {state}')
 
