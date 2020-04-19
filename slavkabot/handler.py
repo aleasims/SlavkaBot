@@ -35,11 +35,13 @@ class Handler:
 
     @events.register(NewMessage())
     async def cache(self, event):
+        logger.debug('Cache handler called')
         self.cache.append(event.message)
         logger.debug(f'Cached entity {event.message}')
 
     @events.register(NewMessage(pattern=f'.*(@{BOT_NAME}).*'))
     async def respond(self, event):
+        logger.debug('Respond handler called')
         self.bot.chage_state(BotState.DIALOG)
         await event.respond(self.slavka.respond(list(self.cache),
                                                 self.BOT_NAME))
