@@ -28,6 +28,7 @@ class Handler:
             self.checkout_state,
             self.cache,
             self.init_dialog,
+            self.stop_dialog,
             self.respond,
         ]
 
@@ -59,6 +60,7 @@ class Handler:
     @events.register(NewMessage(pattern='/stfu'))
     async def stop_dialog(self, event):
         self.bot.chage_state(BotState.IDLE)
+        raise events.StopPropagation
 
     @events.register(NewMessage())
     async def respond(self, event):
