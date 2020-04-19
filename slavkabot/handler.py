@@ -25,10 +25,10 @@ class Handler:
     def handlers(self):
         return [
             self.greet,
+            self.stop_dialog,
             self.checkout_state,
             self.cache,
             self.init_dialog,
-            self.stop_dialog,
             self.respond,
         ]
 
@@ -39,6 +39,12 @@ class Handler:
     @events.register(NewMessage(pattern='/greet'))
     async def greet(self, event):
         await event.respond(self.slavka.greeting())
+        raise events.StopPropagation
+
+    @events.register(NewMessage(pattern='/stfu'))
+    async def stop_dialog(self, event):
+        if self.bot.state == BotState.DIALOG:
+            self.bot.change_state(BotState.IDLE)
         raise events.StopPropagation
 
     @events.register(NewMessage())
@@ -58,11 +64,6 @@ class Handler:
     @events.register(NewMessage(pattern=f'.*(@{BOT_NAME}).*'))
     async def init_dialog(self, event):
         self.bot.change_state(BotState.DIALOG)
-
-    @events.register(NewMessage(pattern='/stfu'))
-    async def stop_dialog(self, event):
-        self.bot.change_state(BotState.IDLE)
-        raise events.StopPropagation
 
     @events.register(NewMessage())
     async def respond(self, event):
