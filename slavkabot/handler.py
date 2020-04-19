@@ -56,6 +56,10 @@ class Handler:
     async def init_dialog(self, event):
         self.bot.chage_state(BotState.DIALOG)
 
+    @events.register(NewMessage(pattern='/stfu'))
+    async def stop_dialog(self, event):
+        self.bot.chage_state(BotState.IDLE)
+
     @events.register(NewMessage())
     async def respond(self, event):
         self.bot.last_checkout = self.now()
