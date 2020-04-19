@@ -1,5 +1,5 @@
 import logging
-from collections import deque
+# from collections import deque
 
 from telethon import events
 from telethon.events import NewMessage
@@ -19,7 +19,7 @@ class Handler:
         self.cache_size = cache_size
 
         self.slavka = Slavka(context_size=self.cache_size)
-        self.cache = deque(maxlen=self.cache_size)
+        self.cache = []
 
     def handlers(self):
         return [
@@ -43,6 +43,6 @@ class Handler:
     async def respond(self, event):
         logger.debug('Respond handler called')
         self.bot.chage_state(BotState.DIALOG)
-        await event.respond(self.slavka.respond(list(self.cache),
+        await event.respond(self.slavka.respond(self.cache,
                                                 self.BOT_NAME))
         raise events.StopPropagation
