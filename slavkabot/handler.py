@@ -17,6 +17,7 @@ class Handler:
         self.bot = bot
         Handler.BOT_NAME = self.bot.name
         self.cache_size = cache_size
+        self.cached_messages = []
 
         self.slavka = Slavka(context_size=self.cache_size)
 
