@@ -21,9 +21,6 @@ class Handler:
         self.slavka = Slavka(context_size=self.cache_size)
         self.cache = deque(maxlen=self.cache_size)
 
-        for handler in self.handlers():
-            self.bot.client.add_event_handler(handler)
-
     def handlers(self):
         return [
             self.greet,
@@ -39,11 +36,11 @@ class Handler:
     @events.register(NewMessage())
     async def cache(self, event):
         self.cache.append(event.message)
-        logger.debug(f'Cached entity {self.message}')
+        logger.debug(f'Cached entity {event.message}')
 
     @events.register(NewMessage(pattern=f'.*(@{BOT_NAME}).*'))
     async def respond(self, event):
         self.bot.chage_state(BotState.DIALOG)
-        await event.respond(self.slavka.respond(self.cache,
+        await event.respond(self.slavka.respond(list(self.cache),
                                                 self.BOT_NAME))
         raise events.StopPropagation
