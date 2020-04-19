@@ -19,7 +19,7 @@ class Handler:
         Handler.BOT_NAME = self.bot.name
         self.cache_size = cache_size
 
-        self.cached = deque(maxlen=self.cache_size)
+        self.cached = {}
         self.slavka = Slavka(context_size=self.cache_size)
 
     def handlers(self):
@@ -43,7 +43,9 @@ class Handler:
 
     @events.register(NewMessage())
     async def cache(self, event):
-        self.cached.append(event.message)
+        if event.chat_id not in self.cached:
+            self.cached[event.chat_id] = deque(maxlen=self.cache_size)
+        self.cached[event.chat_id].append(event.message)
         logger.debug(f'Cached entity {event.message}')
 
     @events.register(NewMessage())
@@ -66,6 +68,6 @@ class Handler:
     async def respond(self, event):
         self.bot.last_checkout = self.now()
         if self.bot.state == BotState.DIALOG:
-            await event.respond(self.slavka.respond(list(self.cached),
-                                                    self.BOT_NAME))
+            await event.respond(self.slavka.respond(
+                list(self.cached[event.chat_id]), self.BOT_NAME))
         raise events.StopPropagation

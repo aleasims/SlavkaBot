@@ -37,11 +37,11 @@ class Slavka:
     def respond(self, context: List[Message], botname: str):
         if self.model_loaded:
             context = self.parse_context(context, botname)
-            logger.debug(f'Feeding context: {context}')
+            logger.debug(f'Feeding context: {repr(context)}')
 
             out_text = self.chat_bot_ai.respond(context)
 
-            logger.debug(f'Generated response: {out_text}')
+            logger.debug(f'Generated response: {repr(out_text)}')
             # TODO: Filter out_text till Slavka's response
             filter_idx = out_text.find('EOM')
             if filter_idx > 2:
