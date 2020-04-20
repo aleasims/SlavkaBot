@@ -48,6 +48,9 @@ class Slavka:
             out_text = self.chat_bot_ai.respond(inp_text)
             logger.debug(f'Generated response: {repr(out_text)}')
 
+            # TODO: how to strip EOM precisely?
+            out_text = out_text.split('[')[0].strip()
+
             return out_text
 
         return self.random_phrase()

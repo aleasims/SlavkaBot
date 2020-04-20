@@ -16,6 +16,7 @@ class HandlerManager:
         self.slavka = slavka
 
         self.active_dialogs = set()
+        self.max_dialogs = 10
         self.cache = {}
         self.cache_size = 25
 
@@ -29,26 +30,35 @@ class HandlerManager:
 
     @events.register(NewMessage())
     async def init_dialog(self, event: NewMessage.Event):
-        if event.message.mentioned:
-            if event.chat_id not in self.active_dialogs:
-                self.active_dialogs.add(event.chat_id)
-                logger.info(f'Init dialog for chat ID: {event.chat_id}')
-                self.client.add_event_handler(
-                    self.stfu, NewMessage(chats=event.chat_id,
-                                          pattern='/stfu'))
-                self.client.add_event_handler(
-                    self.respond, NewMessage(chats=event.chat_id))
+        if len(self.active_dialogs) == self.max_dialogs:
+            await event.respond('Мне че разорваться чтоль?' +
+                                'подожди, я с другими общаюсь!')
+            raise events.StopPropagation
+
+        if event.message.mentioned and \
+                event.chat_id not in self.active_dialogs:
+            logger.info(f'Init dialog for chat ID: {event.chat_id}')
+
+            self.active_dialogs.add(event.chat_id)
+            self.client.add_event_handler(
+                self.stfu, NewMessage(chats=event.chat_id,
+                                      pattern='/stfu'))
+            self.client.add_event_handler(
+                self.respond, NewMessage(chats=event.chat_id))
 
     async def respond(self, event: NewMessage.Event):
-        logger.info(f'Active dialog with chat ID: {event.chat_id}')
+        logger.info(f'Active respond for {event.chat_id} chat')
+        message = (get_member(event.message.from_id), event.message.text)
 
         if event.chat_id not in self.cache:
             self.cache[event.chat_id] = deque(maxlen=self.cache_size)
-        message = (get_member(event.message.from_id), event.message.text)
         self.cache[event.chat_id].append(message)
         logging.debug(f'Cached message: {message}')
 
-        await event.respond(self.slavka.respond(self.cache[event.chat_id]))
+        response = self.slavka.respond(self.cache[event.chat_id])
+        logger.info(f'Response ({event.chat_id}): {repr(response)}')
+
+        await event.respond(response)
         raise events.StopPropagation
 
     async def stfu(self, event: NewMessage.Event):
