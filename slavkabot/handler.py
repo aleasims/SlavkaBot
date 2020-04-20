@@ -15,6 +15,7 @@ class HandlerManager:
         self.client = client
         self.slavka = slavka
 
+        self.active_dialogs = set()
         self.cache = {}
         self.cache_size = 25
 
@@ -29,9 +30,9 @@ class HandlerManager:
     @events.register(NewMessage())
     async def init_dialog(self, event: NewMessage.Event):
         if event.message.mentioned:
-            if event.chat_id not in self.cache:
+            if event.chat_id not in self.active_dialogs:
+                self.active_dialogs.add(event.chat_id)
                 logger.info(f'Init dialog for chat ID: {event.chat_id}')
-                self.cache[event.chat_id] = deque(maxlen=self.cache_size)
                 self.client.add_event_handler(
                     self.stfu, NewMessage(chats=event.chat_id,
                                           pattern='/stfu'))
@@ -41,6 +42,8 @@ class HandlerManager:
     async def respond(self, event: NewMessage.Event):
         logger.info(f'Active dialog with chat ID: {event.chat_id}')
 
+        if event.chat_id not in self.cache:
+            self.cache[event.chat_id] = deque(maxlen=self.cache_size)
         message = (get_member(event.message.from_id), event.message.text)
         self.cache[event.chat_id].append(message)
         logging.debug(f'Cached message: {message}')
@@ -54,4 +57,5 @@ class HandlerManager:
             self.respond, NewMessage(chats=event.chat_id))
         self.client.remove_event_handler(
             self.stfu, NewMessage(chats=event.chat_id, pattern='/stfu'))
+        self.active_dialogs.remove(event.chat_id)
         raise events.StopPropagation
