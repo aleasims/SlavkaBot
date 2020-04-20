@@ -67,7 +67,7 @@ class Slavka:
 
         lines = []
         prev_name = None
-        for i, member, text in enumerate(messages):
+        for i, (member, text) in enumerate(messages):
             if member.name != prev_name:
                 lines[i - 1] += self.chat_bot_ai.EOM
                 prev_name = member.name
