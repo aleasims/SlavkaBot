@@ -71,7 +71,7 @@ class Slavka:
         for i, (member, text) in enumerate(messages):
             if member.name != prev_name:
                 if i > 0:
-                    lines[i - 1] += self.chat_bot_ai.EOM
+                    lines[i - 1] += self.chat_bot_ai.EOM[0]
                 prev_name = member.name
                 text = ' '.join(filter(lambda part: not part.startswith('@'),
                                        text.split()))
