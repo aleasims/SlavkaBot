@@ -42,5 +42,5 @@ class Bot:
         logger.info(f'Bot initiated')
 
     def start(self):
-        logger.info(f'Starting bot ({self.state})')
+        logger.info(f'Starting bot')
         self.client.run_until_disconnected()
