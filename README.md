@@ -6,20 +6,26 @@ Telegram bot aiming to replace our friend Slavka in group chat. The state-of-the
 
 ## Deploy with Docker
 
-### Run bot
+This will automaticly destroy existing container, pull from master branch and launch new container in daemon.
 
 ```
-docker build -t slavka:latest .
-docker run -d --env-file env_vars.txt --name slavka slavka
+./run_docker.sh
 ```
 
-env_vars.txt file:
+You will need file with env vars in the root `env_vars.txt`:
 
 ```
 MODE=prod
 TOKEN=1088...
 API_ID=13...
 API_HASH=67bd...
+```
+
+### Run manualy
+
+```
+docker build -t slavka:latest .
+docker run -d --env-file env_vars.txt --name slavka slavka
 ```
 
 ### Stop bot
