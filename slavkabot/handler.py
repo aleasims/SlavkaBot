@@ -9,8 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class HandlerManager:
-    def __init__(self, name: str, client: TelegramClient, slavka: Slavka):
-        self.bot_name = name
+    def __init__(self, client: TelegramClient, slavka: Slavka):
         self.client = client
         self.slavka = slavka
 
@@ -26,7 +25,18 @@ class HandlerManager:
     async def init_dialog(self, event: NewMessage.Event):
         if event.message.mentioned:
             logger.info(f'Init dialog for chat ID: {event.chat_id}')
-            respond_event = NewMessage(chats=event.chat_id)
-            stop_event = NewMessage(chats=event.chat_id, pattern='/stfu')
-            logger.info(f'Respond event: {respond_event}')
-            logger.info(f'Stop event: {stop_event}')
+            self.client.add_event_handler(
+                self.respond, NewMessage(chats=event.chat_id))
+            self.client.add_event_handler(
+                self.stfu, NewMessage(chats=event.chat_id, pattern='/stfu'))
+
+    async def respond(self, event: NewMessage.Event):
+        logger.info(f'Active dialog with chat ID: {event.chat_id}')
+        event.respond(self.slavka.random_phrase())
+
+    async def stfu(self, event: NewMessage.Event):
+        logger.info(f'Stop dialog for chat ID: {event.chat_id}')
+        self.client.remove_event_handler(
+            self.respond, NewMessage(chats=event.chat_id))
+        self.client.remove_event_handler(
+            self.stfu, NewMessage(chats=event.chat_id, pattern='/stfu'))

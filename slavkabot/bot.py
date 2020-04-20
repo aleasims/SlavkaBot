@@ -37,7 +37,7 @@ class Bot:
         self.slavka = Slavka()
         logger.info('Initiated Slavka')
 
-        self.handler = HandlerManager(self.name, self.client, self.slavka)
+        self.handler = HandlerManager(self.client, self.slavka)
 
         logger.info(f'Bot initiated')
 
