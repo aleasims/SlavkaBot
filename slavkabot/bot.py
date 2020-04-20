@@ -2,8 +2,8 @@ import logging
 
 import telethon as tele
 
-from slavkabot.handler import Handler
-from slavkabot.state import BotState
+from slavkabot import HandlerManager
+from slavkabot import Slavka
 
 logger = logging.getLogger(__name__)
 
@@ -34,19 +34,12 @@ class Bot:
         self.client.start(bot_token=config['TOKEN'])
         logger.info('Started Telegram Client')
 
-        self.handler = Handler(self, cache_size=10)
-        for handler in self.handler.handlers():
-            self.client.add_event_handler(handler)
-        logger.info('Registered handlers')
+        self.slavka = Slavka(context_size=self.cache_size)
+        logger.info('Initiated Slavka')
 
-        self.state = BotState.IDLE
-        self.dialog_timeout = 60  # 1 min
-        self.last_checkout = 0
+        self.handler = HandlerManager(self.name, self.client, self.slavka)
+
         logger.info(f'Bot initiated')
-
-    def change_state(self, state):
-        self.state = state
-        logger.debug(f'Bot state changed to {state}')
 
     def start(self):
         logger.info(f'Starting bot ({self.state})')
