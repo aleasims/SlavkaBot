@@ -33,10 +33,10 @@ class HandlerManager:
                 logger.info(f'Init dialog for chat ID: {event.chat_id}')
                 self.cache[event.chat_id] = deque(maxlen=self.cache_size)
                 self.client.add_event_handler(
-                    self.respond, NewMessage(chats=event.chat_id))
-                self.client.add_event_handler(
                     self.stfu, NewMessage(chats=event.chat_id,
                                           pattern='/stfu'))
+                self.client.add_event_handler(
+                    self.respond, NewMessage(chats=event.chat_id))
 
     async def respond(self, event: NewMessage.Event):
         logger.info(f'Active dialog with chat ID: {event.chat_id}')

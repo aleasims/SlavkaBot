@@ -68,9 +68,12 @@ class Slavka:
         lines = []
         prev_name = ''
         for i, (member, text) in enumerate(messages):
-            if prev_name and member.name != prev_name:
-                lines[i - 1] += self.chat_bot_ai.EOM
+            if member.name != prev_name:
+                if i > 0:
+                    lines[i - 1] += self.chat_bot_ai.EOM
                 prev_name = member.name
+                text = ' '.join(filter(lambda part: not part.startswith('@'),
+                                       text.split()))
                 message = '{author}: {text}'.format(author=member.name,
                                                     text=text)
             else:
