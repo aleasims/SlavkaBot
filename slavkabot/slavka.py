@@ -3,7 +3,7 @@ import logging
 from typing import List, Tuple
 
 from slavkabot import get_member, Member
-from slavkabot.ChatBotAI.Responder import ChatBotAI
+from slavkabot.ChatBotAI import ChatBotAI
 
 logger = logging.getLogger(__name__)
 

@@ -34,7 +34,7 @@ class Bot:
         self.client.start(bot_token=config['TOKEN'])
         logger.info('Started Telegram Client')
 
-        self.slavka = Slavka(context_size=self.cache_size)
+        self.slavka = Slavka()
         logger.info('Initiated Slavka')
 
         self.handler = HandlerManager(self.name, self.client, self.slavka)
