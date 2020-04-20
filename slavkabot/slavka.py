@@ -48,8 +48,9 @@ class Slavka:
             out_text = self.chat_bot_ai.respond(inp_text)
             logger.debug(f'Generated response: {repr(out_text)}')
 
-            response = out_text.split(self.chat_bot_ai.EOM)[0]
-            return response
+            for EOM in self.chat_bot_ai.EOM:
+                out_text = out_text.split(EOM)[0]
+            return out_text
 
         return self.random_phrase()
 
