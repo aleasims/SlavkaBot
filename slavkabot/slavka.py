@@ -1,23 +1,21 @@
 import random
 import logging
-from typing import List
+from typing import List, Tuple
 
-from telethon.tl.custom import Message
-
-from slavkabot.members import get_member
+from slavkabot import get_member, Member
 from slavkabot.ChatBotAI.Responder import ChatBotAI
 
 logger = logging.getLogger(__name__)
 
 
 class Slavka:
-    def __init__(self, phrases='slavkabot/phrases.txt', context_size=5):
-        self.context_size = context_size
+    def __init__(self, phrases='slavkabot/phrases.txt'):
         with open(phrases, 'r', encoding='utf-8') as f:
             self.phrases = [phrase.strip() for phrase in f.readlines()]
 
         try:
             self.chat_bot_ai = ChatBotAI()
+            self.name = get_member('Славка').name
             self.model_loaded = True
             logger.info('ChatBotAI loaded')
         except Exception as e:
@@ -25,56 +23,59 @@ class Slavka:
             logger.warn(f'Using random sampling instead ChatBotAI')
             self.model_loaded = False
 
-    def greeting(self):
+    def greeting(self) -> str:
         return "Батя в здании!"
 
-    def welcome(self):
+    def welcome(self) -> str:
         return "Добро пожаловать в хату!"
 
-    def random_phrase(self):
+    def random_phrase(self) -> str:
+        """Returns random phrase from provied in `self.phrases`."""
         return random.choice(self.phrases)
 
-    def respond(self, context: List[Message], botname: str):
+    def respond(self, context: List[Tuple[Member, str]]) -> str:
+        """Respond to a message with provided context.
+
+        Returns:
+            Text of response message. If generative model loaded,
+            returns sampled result. Otherwise returns random phrase.
+        """
+
         if self.model_loaded:
-            context = self.parse_context(context, botname)
-            logger.debug(f'Feeding context: {repr(context)}')
+            inp_text = self.to_string(context)
+            logger.debug(f'Feeding context: {repr(inp_text)}')
 
-            out_text = self.chat_bot_ai.respond(context)
-
+            out_text = self.chat_bot_ai.respond(inp_text)
             logger.debug(f'Generated response: {repr(out_text)}')
-            # TODO: Filter out_text till Slavka's response
-            filter_idx = out_text.find('EOM')
-            if filter_idx > 2:
-                out_text = out_text[:filter_idx-2]
-            return out_text
-        else:
-            return self.random_phrase()
 
-    def parse_context(self, messages: List[Message], botname: str = '') -> str:
+            response = out_text.split(self.chat_bot_ai.EOM)[0]
+            return response
+
+        return self.random_phrase()
+
+    def to_string(self, messages: List[Tuple[Member, str]]) -> str:
+        """Convert sequence of messages into string.
+
+        Example:
+            'Евгин: привет[EOM]
+            Борз: привет
+            как дела?[EOM]
+            Славка: '
+
+        Return `'Славка: '`, if messages is empty
         """
-        Example return:
-        'Евгин: привет [EOM]
-        Борз: привет
-        как дела? [EOM]'
 
-        Return '', if messages is empty
-        """
+        lines = []
+        prev_name = None
+        for i, member, text in enumerate(messages):
+            if member.name != prev_name:
+                lines[i - 1] += self.chat_bot_ai.EOM
+                prev_name = member.name
+                message = '{author}: {text}'.format(author=member.name,
+                                                    text=text)
+            else:
+                message = text
+            lines.append(message)
 
-        assert len(messages) <= self.context_size, 'Too long context'
-
-        if messages:
-            context = ""
-            prev_message_author = None
-            for message in messages:
-                text = message.message.replace('@' + botname, '').strip()
-                author = get_member(message.from_id).name
-                if prev_message_author == author:
-                    context += "\n" + text
-                else:
-                    prev_message_author = author
-                    context += " [EOM]\n" + author + ": " + text
-
-            context += " [EOM]\n" + "Славка" + ": "
-            return context
-
-        return ''
+        lines.append(self.name + ': ')
+        return '\n'.join(lines)

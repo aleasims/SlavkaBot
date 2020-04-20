@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class ChatBotAI:
+    EOM = '[EOM]'
+
     def __init__(self, model_path=MODEL_PATH, tokenizer_cls="YTEncoder",
                  tokenizer_path="slavkabot/ChatBotAI/bpe/yt.model",
                  device='cpu'):
