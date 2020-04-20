@@ -32,7 +32,7 @@ class HandlerManager:
 
     async def respond(self, event: NewMessage.Event):
         logger.info(f'Active dialog with chat ID: {event.chat_id}')
-        event.respond(self.slavka.random_phrase())
+        await event.respond(self.slavka.random_phrase())
 
     async def stfu(self, event: NewMessage.Event):
         logger.info(f'Stop dialog for chat ID: {event.chat_id}')
