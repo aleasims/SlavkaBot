@@ -1,6 +1,6 @@
 import random
 import logging
-from typing import List, Tuple
+from typing import Tuple, Iterable
 
 from slavkabot import get_member, Member
 from slavkabot.ChatBotAI import ChatBotAI
@@ -33,7 +33,7 @@ class Slavka:
         """Returns random phrase from provied in `self.phrases`."""
         return random.choice(self.phrases)
 
-    def respond(self, context: List[Tuple[Member, str]]) -> str:
+    def respond(self, context: Iterable[Tuple[Member, str]]) -> str:
         """Respond to a message with provided context.
 
         Returns:
