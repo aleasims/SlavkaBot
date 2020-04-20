@@ -53,7 +53,7 @@ class Slavka:
 
         return self.random_phrase()
 
-    def to_string(self, messages: List[Tuple[Member, str]]) -> str:
+    def to_string(self, messages: Iterable[Tuple[Member, str]]) -> str:
         """Convert sequence of messages into string.
 
         Example:
