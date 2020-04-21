@@ -18,7 +18,7 @@ class HandlerManager:
         self.active_dialogs = set()
         self.max_dialogs = 10
         self.cache = {}
-        self.cache_size = 25
+        self.cache_size = 10
 
         self.client.add_event_handler(self.greet)
         self.client.add_event_handler(self.init_dialog)
