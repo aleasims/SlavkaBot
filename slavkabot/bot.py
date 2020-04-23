@@ -11,9 +11,6 @@ logger = logging.getLogger(__name__)
 class Bot:
     def __init__(self, config):
         logger.info('Initiating bot')
-        # TODO: obtain this dynamicly
-        self.name = 'sluvka_bot'
-        self.chat_id = -1001280237846
 
         api_id = config['API_ID']
         api_hash = config['API_HASH']
