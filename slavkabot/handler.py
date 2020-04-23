@@ -30,15 +30,13 @@ class HandlerManager:
 
     @events.register(NewMessage())
     async def init_dialog(self, event: NewMessage.Event):
-        if len(self.active_dialogs) == self.max_dialogs:
-            await event.respond('Мне че разорваться чтоль?' +
-                                'подожди, я с другими общаюсь!')
-            raise events.StopPropagation
-
         if event.message.mentioned and \
                 event.chat_id not in self.active_dialogs:
-            logger.info(f'Init dialog for chat ID: {event.chat_id}')
+            if len(self.active_dialogs) == self.max_dialogs:
+                await event.respond('Мне че разорваться чтоль? подожди, я с другими общаюсь!')
+                raise events.StopPropagation
 
+            logger.info(f'Init dialog (chat_id={event.chat_id})')
             self.active_dialogs.add(event.chat_id)
             self.client.add_event_handler(
                 self.stfu, NewMessage(chats=event.chat_id,
@@ -47,13 +45,14 @@ class HandlerManager:
                 self.respond, NewMessage(chats=event.chat_id))
 
     async def respond(self, event: NewMessage.Event):
-        logger.info(f'Active respond for {event.chat_id} chat')
+        logger.info(f'Call (chat_id={event.chat_id}): + {repr(event.message.text)}')
         message = (get_member(event.message.from_id), event.message.text)
 
         if event.chat_id not in self.cache:
             self.cache[event.chat_id] = deque(maxlen=self.cache_size)
         self.cache[event.chat_id].append(message)
-        logging.debug(f'Cached message: {message}')
+        logger.debug(f'Cached message: {message}')
+        logger.debug(f'Cache: {self.cache}')
 
         response = self.slavka.respond(self.cache[event.chat_id])
         logger.info(f'Response ({event.chat_id}): {repr(response)}')
@@ -62,7 +61,7 @@ class HandlerManager:
         raise events.StopPropagation
 
     async def stfu(self, event: NewMessage.Event):
-        logger.info(f'Stop dialog for chat ID: {event.chat_id}')
+        logger.info(f'Stop dialog (chat_id={event.chat_id})')
         self.client.remove_event_handler(
             self.respond, NewMessage(chats=event.chat_id))
         self.client.remove_event_handler(
