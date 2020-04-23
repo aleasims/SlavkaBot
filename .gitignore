@@ -130,6 +130,7 @@ dmypy.json
 
 
 slavkabot/chat_history
+slavkabot/ChatBotAI/model_checkpoint/
 *.zip
 
 env_vars.txt
