@@ -64,7 +64,7 @@ class HandlerManager:
 
         logger.info(
             f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
-        message = (get_member(id), event.message.text)
+        message = (get_member(event.message.from_id), event.message.text)
 
         if event.chat_id not in self.cache:
             self.cache[event.chat_id] = deque(maxlen=self.cache_size)
