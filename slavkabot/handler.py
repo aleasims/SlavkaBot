@@ -54,17 +54,13 @@ class HandlerManager:
             logger.info(f'Init dialog (chat_id={event.chat_id})')
             self.active_dialogs.add(event.chat_id)
             self.client.add_event_handler(
-                self.stfu, NewMessage(chats=event.chat_id,
-                                      pattern='/stfu'))
+                self.stfu, NewMessage(chats=event.chat_id, pattern='/stfu'))
             self.client.add_event_handler(
-                self.respond, NewMessage(chats=event.chat_id))
+                self.respond, NewMessage(incoming=True, chats=event.chat_id))
 
     async def respond(self, event: NewMessage.Event):
 
         logger.info(f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
-        id = event.message.from_id
-        if id == self.client.me.id:
-            return
         message = (get_member(id), event.message.text)
 
         if event.chat_id not in self.cache:
@@ -81,7 +77,7 @@ class HandlerManager:
     async def stfu(self, event: NewMessage.Event):
         logger.info(f'Stop dialog (chat_id={event.chat_id})')
         self.client.remove_event_handler(
-            self.respond, NewMessage(chats=event.chat_id))
+            self.respond, NewMessage(incoming=True, chats=event.chat_id))
         self.client.remove_event_handler(
             self.stfu, NewMessage(chats=event.chat_id, pattern='/stfu'))
         self.active_dialogs.remove(event.chat_id)
