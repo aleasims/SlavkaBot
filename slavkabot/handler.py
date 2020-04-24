@@ -1,5 +1,6 @@
 import logging
 from collections import deque
+from typing import Dict
 
 from telethon import TelegramClient, events
 from telethon.events import NewMessage
@@ -12,14 +13,17 @@ from slavkabot import get_member
 logger = logging.getLogger(__name__)
 
 class HandlerManager:
-    def __init__(self, client: TelegramClient, slavka: Slavka):
+    def __init__(self, client: TelegramClient, slavka: Slavka,
+                 max_dialogs: int = 10,
+                 cache_size: int = 10):
         self.client = client
         self.slavka = slavka
 
         self.active_dialogs = set()
-        self.max_dialogs = 10
-        self.cache = {}
-        self.cache_size = 10
+        self.max_dialogs = max_dialogs
+
+        self.cache: Dict[int, deque] = {}
+        self.cache_size = cache_size
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
         self.client.add_event_handler(self.add_buttons, NewMessage())
@@ -41,15 +45,13 @@ class HandlerManager:
             
         
     async def init_dialog(self, event: NewMessage.Event):
-        if len(self.active_dialogs) == self.max_dialogs:
-            await event.respond('Мне че разорваться чтоль?' +
-                                'подожди, я с другими общаюсь!')
-            raise events.StopPropagation
-
         if event.message.mentioned and \
                 event.chat_id not in self.active_dialogs:
-            logger.info(f'Init dialog for chat ID: {event.chat_id}')
+            if len(self.active_dialogs) == self.max_dialogs:
+                await event.respond('Мне че разорваться чтоль? подожди, я с другими общаюсь!')
+                raise events.StopPropagation
 
+            logger.info(f'Init dialog (chat_id={event.chat_id})')
             self.active_dialogs.add(event.chat_id)
             self.client.add_event_handler(
                 self.stfu, NewMessage(chats=event.chat_id,
@@ -58,7 +60,8 @@ class HandlerManager:
                 self.respond, NewMessage(chats=event.chat_id))
 
     async def respond(self, event: NewMessage.Event):
-        logger.info(f'Active respond for {event.chat_id} chat')
+
+        logger.info(f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
         id = event.message.from_id
         if id == self.client.me.id:
             return
@@ -67,7 +70,7 @@ class HandlerManager:
         if event.chat_id not in self.cache:
             self.cache[event.chat_id] = deque(maxlen=self.cache_size)
         self.cache[event.chat_id].append(message)
-        logging.debug(f'Cached message: {message}')
+        logger.debug(f'Cached message: {repr(message[1])} from {message[0]}')
 
         response = self.slavka.respond(self.cache[event.chat_id])
         logger.info(f'Response ({event.chat_id}): {repr(response)}')
@@ -76,7 +79,7 @@ class HandlerManager:
         raise events.StopPropagation
 
     async def stfu(self, event: NewMessage.Event):
-        logger.info(f'Stop dialog for chat ID: {event.chat_id}')
+        logger.info(f'Stop dialog (chat_id={event.chat_id})')
         self.client.remove_event_handler(
             self.respond, NewMessage(chats=event.chat_id))
         self.client.remove_event_handler(

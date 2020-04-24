@@ -1,5 +1,5 @@
 docker stop slavka
 docker rm slavka
-git pull
+git pull origin master
 docker build -t slavka:latest .
-docker run -d --env-file env_vars.txt --name slavka slavka
+docker run -d --name slavka slavka

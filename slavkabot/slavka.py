@@ -9,12 +9,16 @@ logger = logging.getLogger(__name__)
 
 
 class Slavka:
-    def __init__(self, phrases='slavkabot/phrases.txt'):
-        with open(phrases, 'r', encoding='utf-8') as f:
-            self.phrases = [phrase.strip() for phrase in f.readlines()]
+    def __init__(self, model_cfg: dict, phrases: str = ''):
+        self.phrases_loaded = False
+        if phrases:
+            with open(phrases, 'r', encoding='utf-8') as f:
+                self.phrases = [phrase.strip() for phrase in f.readlines()]
+            self.phrases_loaded = True
 
         try:
-            self.chat_bot_ai = ChatBotAI()
+            self.chat_bot_ai = ChatBotAI(model_cfg.get('model_path'),
+                                         model_cfg.get('length'))
             self.name = get_member('Славка').name
             self.model_loaded = True
             logger.info('ChatBotAI loaded')
@@ -53,7 +57,10 @@ class Slavka:
 
             return out_text
 
-        return self.random_phrase()
+        elif self.phrases_loaded:
+            return self.random_phrase()
+
+        return "Не знаю, как тебе ответить"
 
     def to_string(self, messages: Iterable[Tuple[Member, str]]) -> str:
         """Convert sequence of messages into string.

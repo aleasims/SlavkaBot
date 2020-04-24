@@ -8,7 +8,7 @@ from slavkabot.ChatBotAI.yt_encoder import YTEncoder
 
 FILTER_VALUE = -float('Inf')
 MAX_INPUT = 1023
-MODEL_PATH = './slavkabot/ChatBotAI/model_checkpoint'
+DEFAULT_LENGTH = 10
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +16,13 @@ logger = logging.getLogger(__name__)
 class ChatBotAI:
     EOM = ('[EOM]', '[ EOM]')
 
-    def __init__(self, model_path=MODEL_PATH, tokenizer_cls="YTEncoder",
+    def __init__(self, model_path: str, length=None,
+                 tokenizer_cls="YTEncoder",
                  tokenizer_path="slavkabot/ChatBotAI/bpe/yt.model",
                  device='cpu'):
+        if not model_path:
+            raise ValueError(f'Model not found: model_path={model_path}')
+        self.length = length if length is not None else DEFAULT_LENGTH
         self.model_path = model_path
         self.model_class = GPT2LMHeadModel
         self.config_class = GPT2Config
