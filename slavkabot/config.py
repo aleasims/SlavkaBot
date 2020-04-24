@@ -1,8 +1,6 @@
 import logging
 import yaml
 
-from slavkabot.utils import CaseInsensitiveDict
-
 
 MODES = ['dev', 'prod']
 TELE_REQUIRED = ['token', 'api_id', 'api_hash']
@@ -20,7 +18,8 @@ class ConfigurationError(Exception):
 def build_config(config_path):
     try:
         f = open(config_path, 'r')
-        config = CaseInsensitiveDict(yaml.load(f, Loader=yaml.CLoader))
+        config = yaml.load(f, Loader=yaml.CLoader)
+        # TODO: Change this dict to case insensetive recursivly
     except OSError as e:
         raise ConfigurationError(f"Cannot read config file: {e}")
 
