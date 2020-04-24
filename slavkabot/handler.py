@@ -12,6 +12,7 @@ from slavkabot import get_member
 
 logger = logging.getLogger(__name__)
 
+
 class HandlerManager:
     def __init__(self, client: TelegramClient, slavka: Slavka,
                  max_dialogs: int = 10,
@@ -26,6 +27,7 @@ class HandlerManager:
         self.cache_size = cache_size
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
+        self.client.add_event_handler(self.onClick, events.CallbackQuery())
         self.client.add_event_handler(self.add_buttons, NewMessage())
         self.client.add_event_handler(self.init_dialog, NewMessage())
 
@@ -33,17 +35,17 @@ class HandlerManager:
         await event.respond(self.slavka.greeting())
         raise events.StopPropagation
 
+    async def on_click(self, event: events.CallbackQuery.Event):
+        await event.answer('You {} this'.format(event.data.decode('UTF-8')), 100)
+
     async def add_buttons(self, event: NewMessage.Event):
-        # async def counter(event: events.CallbackQuery.Event):
-        #     await event.answer('You {} this.'.format(event.data))
         markup = self.client.build_reply_markup([[Button.inline('👍'), Button.inline('😏'),
-                Button.inline('🤔'), Button.inline('😧'), Button.inline('😑')]])
-        types_react_to = (types.MessageMediaDocument, types.MessageMediaPhoto, types.MessageMediaWebPage)
+                                                  Button.inline('🤔'), Button.inline('😧'), Button.inline('😑')]], inline_only=True)
+        types_react_to = (types.MessageMediaDocument,
+                          types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
-            buttons=markup
-            await event.respond('🤔', buttons=buttons)
-            
-        
+            await event.respond('🤔', buttons=markup)
+
     async def init_dialog(self, event: NewMessage.Event):
         if event.message.mentioned and \
                 event.chat_id not in self.active_dialogs:
@@ -60,7 +62,8 @@ class HandlerManager:
 
     async def respond(self, event: NewMessage.Event):
 
-        logger.info(f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
+        logger.info(
+            f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
         message = (get_member(id), event.message.text)
 
         if event.chat_id not in self.cache:
