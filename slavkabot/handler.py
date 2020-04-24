@@ -20,10 +20,9 @@ class HandlerManager:
         self.cache = {}
         self.cache_size = 10
 
-        self.client.add_event_handler(self.greet)
-        self.client.add_event_handler(self.init_dialog)
+        self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
+        self.client.add_event_handler(self.init_dialog, NewMessage())
 
-    @events.register(NewMessage(pattern='/greet'))
     async def greet(self, event: NewMessage.Event):
         await event.respond(self.slavka.greeting())
         raise events.StopPropagation
