@@ -27,7 +27,7 @@ class HandlerManager:
         self.cache_size = cache_size
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
-        self.client.add_event_handler(self.onClick, events.CallbackQuery())
+        self.client.add_event_handler(self.on_click, events.CallbackQuery())
         self.client.add_event_handler(self.add_buttons, NewMessage())
         self.client.add_event_handler(self.init_dialog, NewMessage())
 
