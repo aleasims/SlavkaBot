@@ -1,6 +1,7 @@
 import logging
 from collections import deque
 from typing import Dict
+import re
 
 from telethon import TelegramClient, events
 from telethon.events import NewMessage
@@ -26,6 +27,10 @@ class HandlerManager:
         self.cache: Dict[int, deque] = {}
         self.cache_size = cache_size
 
+        self.markup = self.client.build_reply_markup([[Button.inline('👍'), Button.inline('😏'),
+                                                       Button.inline('🤔'), Button.inline('😧'),
+                                                       Button.inline('😑')]], inline_only=True)
+
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
         self.client.add_event_handler(self.add_buttons, NewMessage())
@@ -36,15 +41,27 @@ class HandlerManager:
         raise events.StopPropagation
 
     async def on_click(self, event: events.CallbackQuery.Event):
-        await event.answer('You {} this'.format(event.data.decode('UTF-8')), 100)
+        text, *num = re.split('\s', event.data.decode('UTF-8'))
+        num = (int(num[0]) if num else 0) + 1
+        mes = await event.get_message()
+        buttons = (await mes.get_buttons())[0]  # first row
+        new_buttons = [butt if (butt.data != event.data) else Button.inline(text + ' ' + str(num))
+                       for butt in buttons]
+
+        await event.answer(f'You {text} this')
+        await event.edit(buttons=new_buttons)
+
+        logger.info(
+            f'{get_member(event.sender_id)} clicked button (mes_id={mes.id}, chat_id={event.chat_id})')
 
     async def add_buttons(self, event: NewMessage.Event):
-        markup = self.client.build_reply_markup([[Button.inline('👍'), Button.inline('😏'),
-                                                  Button.inline('🤔'), Button.inline('😧'), Button.inline('😑')]], inline_only=True)
         types_react_to = (types.MessageMediaDocument,
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
-            await event.respond('🤔', buttons=markup)
+            await event.respond('🤔', buttons=self.markup)
+
+        logger.info(
+            f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
 
     async def init_dialog(self, event: NewMessage.Event):
         if event.message.mentioned and \
@@ -61,7 +78,6 @@ class HandlerManager:
                 self.respond, NewMessage(incoming=True, chats=event.chat_id))
 
     async def respond(self, event: NewMessage.Event):
-
         logger.info(
             f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
         message = (get_member(event.message.from_id), event.message.text)
