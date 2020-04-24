@@ -1,5 +1,6 @@
 import logging
 from collections import deque
+from typing import Dict
 
 from telethon import TelegramClient, events
 from telethon.events import NewMessage
@@ -11,14 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class HandlerManager:
-    def __init__(self, client: TelegramClient, slavka: Slavka):
+    def __init__(self, client: TelegramClient, slavka: Slavka,
+                 max_dialogs: int = 10,
+                 cache_size: int = 10):
         self.client = client
         self.slavka = slavka
 
         self.active_dialogs = set()
-        self.max_dialogs = 10
-        self.cache = {}
-        self.cache_size = 10
+        self.max_dialogs = max_dialogs
+
+        self.cache: Dict[int, deque] = {}
+        self.cache_size = cache_size
 
         self.client.add_event_handler(self.greet)
         self.client.add_event_handler(self.init_dialog)
@@ -51,8 +55,7 @@ class HandlerManager:
         if event.chat_id not in self.cache:
             self.cache[event.chat_id] = deque(maxlen=self.cache_size)
         self.cache[event.chat_id].append(message)
-        logger.debug(f'Cached message: {message}')
-        logger.debug(f'Cache: {self.cache}')
+        logger.debug(f'Cached message: {message[1]} from {message[0]}')
 
         response = self.slavka.respond(self.cache[event.chat_id])
         logger.info(f'Response ({event.chat_id}): {repr(response)}')

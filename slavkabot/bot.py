@@ -11,33 +11,40 @@ logger = logging.getLogger(__name__)
 class Bot:
     def __init__(self, config):
         logger.info('Initiating bot')
-        # TODO: obtain this dynamicly
-        self.name = 'sluvka_bot'
-        self.chat_id = -1001280237846
+        self.mode = config['mode']
+        self.name = config.get('bot_name', '')
 
-        api_id = config['API_ID']
-        api_hash = config['API_HASH']
+        telegram = config['telegram']
 
-        if config['USE_PROXY']:
+        if telegram.get('USE_PROXY'):
             conn = tele.connection.ConnectionTcpMTProxyRandomizedIntermediate
-            proxy_address = (config['PROXY_HOST'],
-                             config['PROXY_PORT'],
-                             config['PROXY_SECRET'])
+            proxy_address = (telegram['PROXY_HOST'],
+                             telegram['PROXY_PORT'],
+                             telegram['PROXY_SECRET'])
             logger.info(f'Using proxy {proxy_address[0]}:{proxy_address[1]}')
 
-            self.client = tele.TelegramClient('bot', api_id, api_hash,
+            self.client = tele.TelegramClient('bot',
+                                              telegram['API_ID'],
+                                              telegram['API_HASH'],
                                               connection=conn,
                                               proxy=proxy_address)
         else:
-            self.client = tele.TelegramClient('bot', api_id, api_hash)
+            self.client = tele.TelegramClient('bot',
+                                              telegram['API_ID'],
+                                              telegram['API_HASH'])
 
-        self.client.start(bot_token=config['TOKEN'])
+        self.client.start(bot_token=telegram['TOKEN'])
         logger.info('Started Telegram Client')
 
-        self.slavka = Slavka()
+        bot = config.get('bot', {})
+
+        self.slavka = Slavka(bot.get('phrases_path'),
+                             model_cfg=bot.get('model', {}))
         logger.info('Initiated Slavka')
 
-        self.handler = HandlerManager(self.client, self.slavka)
+        self.handler = HandlerManager(self.client, self.slavka,
+                                      max_dialogs=bot.get('MAX_DIALOGS'),
+                                      cache_size=bot.get('CACHE_SIZE'))
 
         logger.info(f'Bot initiated')
 

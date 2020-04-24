@@ -1,71 +1,58 @@
-import os
 import logging
+import yaml
+
+from slavkabot.utils import CaseInsensitiveDict
 
 
-def config_logger(level=logging.INFO):
-    LOG_FORMAT = "[%(asctime)s] - %(name)s - %(levelname)s - %(message)s"
-    logging.basicConfig(level=level, format=LOG_FORMAT)
+MODES = ['dev', 'prod']
+TELE_REQUIRED = ['token', 'api_id', 'api_hash']
+PROXIES = ['MTProto', 'SOCKS5']
+PROXY_REQUIRED = {
+    'SOCKS5': ['host', 'port'],
+    'MTProto': ['host', 'port', 'secret']
+}
 
 
 class ConfigurationError(Exception):
     pass
 
 
-def load_config_var(key, default=None):
-    return os.getenv(key, default)
+def build_config(config_path):
+    try:
+        f = open(config_path, 'r')
+        config = CaseInsensitiveDict(yaml.load(f, Loader=yaml.CLoader))
+    except OSError as e:
+        raise ConfigurationError(f"Cannot read config file: {e}")
 
+    if config.get('mode') not in MODES:
+        raise ConfigurationError(f"Unsopported mode: {config.get('mode')}. Expected: {MODES}")
 
-def build_config():
-    modes = ['dev', 'prod']
+    missing = [key for key in TELE_REQUIRED if key not in config['telegram']]
+    if missing:
+        raise ConfigurationError(f"Missing one of required telegram params: {missing}")
 
-    config = {
-        key: load_config_var(key)
-        for key in ('MODE', 'TOKEN', 'API_ID', 'API_HASH')
-    }
-
-    if not all(config.values()):
-        missing = [k for k, v in config.items() if v is None]
-        raise ConfigurationError(
-            f'Missing one of required config params: {missing}')
-
-    if config['MODE'] not in modes:
-        raise ConfigurationError(
-            f'Unsopported mode: {config["MODE"]}. Expected: {modes}')
-
-    if config['MODE'] == 'dev':
+    if config['mode'] == 'dev':
         config_logger(logging.DEBUG)
     else:
         config_logger(logging.INFO)
 
-    config.update(build_proxy_config())
+    if config.get('proxy') and config.get('use_proxy', True):
+        if not config['proxy'].get('type'):
+            config['proxy']['type'] = 'SOCKS5'
+        if config['proxy']['type'] not in PROXIES:
+            raise ConfigurationError(f"Unsupported proxy type: {config['proxy'].get('type')}. Expected: {PROXIES}")
+
+        missing = [key for key in PROXY_REQUIRED[config['proxy']['type']]
+                   if key not in config['proxy']]
+        if missing:
+            raise ConfigurationError(f"Missing one of required proxy params: {missing}")
+        config['use_proxy'] = True
 
     return config
 
 
-def build_proxy_config():
-    supported_types = ['MTProto', 'SOCKS5']
-
-    config = {
-        key: load_config_var(key)
-        for key in ('PROXY_TYPE', 'PROXY_HOST', 'PROXY_PORT')
-    }
-
-    if config['PROXY_TYPE']:
-        config['USE_PROXY'] = True
-        if config['PROXY_TYPE'] not in supported_types:
-            raise ConfigurationError(
-                'Unsupported proxy type: {}. Expected: {}'.format(
-                    config['PROXY_TYPE'], supported_types))
-
-        config['PROXY_PORT'] = int(config['PROXY_PORT'])
-
-        if config['PROXY_TYPE'] == 'MTProto':
-            config['PROXY_SECRET'] = load_config_var('PROXY_SECRET')
-
-        if not all(config.values()):
-            missing = [k for k, v in config.items() if v is None]
-            raise ConfigurationError(
-                f'Missing one of required proxy params: {missing}')
-        return config
-
-    return {'USE_PROXY': False}
+def config_logger(level):
+    LOG_FORMAT = "[%(asctime)s] - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(level=level, format=LOG_FORMAT)
+    logger = logging.getLogger(__name__)
+    logger.info(f'Logger configured for {level}')

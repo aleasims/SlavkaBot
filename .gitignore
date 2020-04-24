@@ -133,3 +133,4 @@ slavkabot/chat_history
 *.zip
 
 env_vars.txt
+**/config.yml
