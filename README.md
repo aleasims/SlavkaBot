@@ -12,20 +12,37 @@ This will automaticly destroy existing container, pull from master branch and la
 ./run_docker.sh
 ```
 
-You will need file with env vars in the root `env_vars.txt`:
+### Config file
+
+Example:
 
 ```
-MODE=prod
-TOKEN=1088...
-API_ID=13...
-API_HASH=67bd...
+mode: dev
+bot_name: sluvka_bot
+telegram:
+    token: 10887...
+    api_id: 13...
+    api_hash: 67bd...
+    use_proxy: false
+    proxy:
+        type: MTProto
+        host: ...
+        port: ...
+        secret: 3a19...
+bot:
+    phrases_path: 'slavkabot/phrases.txt'
+    max_dialogs: 10
+    cache_size: 10
+    model:
+        model_path: slavkabot/ChatBotAI/model_checkpoint
+        length: 20
 ```
 
 ### Run manualy
 
 ```
 docker build -t slavka:latest .
-docker run -d --env-file env_vars.txt --name slavka slavka
+docker run -d --name slavka slavka
 ```
 
 ### Stop bot
