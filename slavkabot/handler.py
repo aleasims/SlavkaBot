@@ -49,13 +49,13 @@ class HandlerManager:
                 self.respond, NewMessage(chats=event.chat_id))
 
     async def respond(self, event: NewMessage.Event):
-        logger.info(f'Call (chat_id={event.chat_id}): + {repr(event.message.text)}')
+        logger.info(f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
         message = (get_member(event.message.from_id), event.message.text)
 
         if event.chat_id not in self.cache:
             self.cache[event.chat_id] = deque(maxlen=self.cache_size)
         self.cache[event.chat_id].append(message)
-        logger.debug(f'Cached message: {message[1]} from {message[0]}')
+        logger.debug(f'Cached message: {repr(message[1])} from {message[0]}')
 
         response = self.slavka.respond(self.cache[event.chat_id])
         logger.info(f'Response ({event.chat_id}): {repr(response)}')
