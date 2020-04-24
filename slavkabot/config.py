@@ -55,4 +55,4 @@ def config_logger(level):
     LOG_FORMAT = "[%(asctime)s] - %(name)s - %(levelname)s - %(message)s"
     logging.basicConfig(level=level, format=LOG_FORMAT)
     logger = logging.getLogger(__name__)
-    logger.info(f'Logger configured for {level}')
+    logger.info(f'Logger configured for {logger.levelname}')

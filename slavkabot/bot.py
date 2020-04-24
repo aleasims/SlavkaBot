@@ -38,8 +38,7 @@ class Bot:
 
         bot = config.get('bot', {})
 
-        self.slavka = Slavka(bot.get('phrases_path'),
-                             model_cfg=bot.get('model', {}))
+        self.slavka = Slavka(bot.get('model', {}), bot.get('phrases_path'))
         logger.info('Initiated Slavka')
 
         self.handler = HandlerManager(self.client, self.slavka,
