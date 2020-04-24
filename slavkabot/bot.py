@@ -36,7 +36,7 @@ class Bot:
         self.client.start(bot_token=telegram['token'])
         logger.info('Started Telegram Client')
 
-		self.client.me = self.client.loop.run_until_complete(self.client.get_me())
+        self.client.me = self.client.loop.run_until_complete(self.client.get_me())
 
         bot = config.get('bot', {})
 
