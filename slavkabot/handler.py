@@ -34,9 +34,9 @@ class HandlerManager:
         raise events.StopPropagation
 
     async def add_buttons(self, event: NewMessage.Event):
-        async def counter(event: events.CallbackQuery.Event):
-            await event.answer('You {} this.'.format(event.data))
-        markup = self.client.build_reply_markup([[Button.inline('👍', counter), Button.inline('😏'),
+        # async def counter(event: events.CallbackQuery.Event):
+        #     await event.answer('You {} this.'.format(event.data))
+        markup = self.client.build_reply_markup([[Button.inline('👍'), Button.inline('😏'),
                 Button.inline('🤔'), Button.inline('😧'), Button.inline('😑')]])
         types_react_to = (types.MessageMediaDocument, types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
