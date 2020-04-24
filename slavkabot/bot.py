@@ -16,24 +16,24 @@ class Bot:
 
         telegram = config['telegram']
 
-        if telegram.get('USE_PROXY'):
+        if telegram.get('use_proxy'):
             conn = tele.connection.ConnectionTcpMTProxyRandomizedIntermediate
-            proxy_address = (telegram['PROXY_HOST'],
-                             telegram['PROXY_PORT'],
-                             telegram['PROXY_SECRET'])
-            logger.info(f'Using proxy {proxy_address[0]}:{proxy_address[1]}')
+            proxy = (telegram['proxy']['host'],
+                     telegram['proxy']['port'],
+                     telegram['proxy']['secret'])
+            logger.info(f'Using proxy {proxy[0]}:{proxy[1]}')
 
             self.client = tele.TelegramClient('bot',
-                                              telegram['API_ID'],
-                                              telegram['API_HASH'],
+                                              telegram['api_id'],
+                                              telegram['api_hash'],
                                               connection=conn,
-                                              proxy=proxy_address)
+                                              proxy=proxy)
         else:
             self.client = tele.TelegramClient('bot',
-                                              telegram['API_ID'],
-                                              telegram['API_HASH'])
+                                              telegram['api_id'],
+                                              telegram['api_hash'])
 
-        self.client.start(bot_token=telegram['TOKEN'])
+        self.client.start(bot_token=telegram['token'])
         logger.info('Started Telegram Client')
 
         bot = config.get('bot', {})
@@ -43,8 +43,8 @@ class Bot:
         logger.info('Initiated Slavka')
 
         self.handler = HandlerManager(self.client, self.slavka,
-                                      max_dialogs=bot.get('MAX_DIALOGS'),
-                                      cache_size=bot.get('CACHE_SIZE'))
+                                      max_dialogs=bot.get('max_dialogs'),
+                                      cache_size=bot.get('cache_size'))
 
         logger.info(f'Bot initiated')
 
