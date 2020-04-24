@@ -4,6 +4,8 @@ from typing import Dict
 
 from telethon import TelegramClient, events
 from telethon.events import NewMessage
+from telethon.tl import types
+from telethon.tl.custom import Button
 
 from slavkabot import Slavka
 from slavkabot import get_member
@@ -24,15 +26,26 @@ class HandlerManager:
         self.cache: Dict[int, deque] = {}
         self.cache_size = cache_size
 
-        self.client.add_event_handler(self.greet)
-        self.client.add_event_handler(self.init_dialog)
+        self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
+        self.client.add_event_handler(self.on_click, events.CallbackQuery())
+        self.client.add_event_handler(self.add_buttons, NewMessage())
+        self.client.add_event_handler(self.init_dialog, NewMessage())
 
-    @events.register(NewMessage(pattern='/greet'))
     async def greet(self, event: NewMessage.Event):
         await event.respond(self.slavka.greeting())
         raise events.StopPropagation
 
-    @events.register(NewMessage())
+    async def on_click(self, event: events.CallbackQuery.Event):
+        await event.answer('You {} this'.format(event.data.decode('UTF-8')), 100)
+
+    async def add_buttons(self, event: NewMessage.Event):
+        markup = self.client.build_reply_markup([[Button.inline('👍'), Button.inline('😏'),
+                                                  Button.inline('🤔'), Button.inline('😧'), Button.inline('😑')]], inline_only=True)
+        types_react_to = (types.MessageMediaDocument,
+                          types.MessageMediaPhoto, types.MessageMediaWebPage)
+        if isinstance(event.media, types_react_to) and not event.sticker:
+            await event.respond('🤔', buttons=markup)
+
     async def init_dialog(self, event: NewMessage.Event):
         if event.message.mentioned and \
                 event.chat_id not in self.active_dialogs:
@@ -43,13 +56,14 @@ class HandlerManager:
             logger.info(f'Init dialog (chat_id={event.chat_id})')
             self.active_dialogs.add(event.chat_id)
             self.client.add_event_handler(
-                self.stfu, NewMessage(chats=event.chat_id,
-                                      pattern='/stfu'))
+                self.stfu, NewMessage(chats=event.chat_id, pattern='/stfu'))
             self.client.add_event_handler(
-                self.respond, NewMessage(chats=event.chat_id))
+                self.respond, NewMessage(incoming=True, chats=event.chat_id))
 
     async def respond(self, event: NewMessage.Event):
-        logger.info(f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
+
+        logger.info(
+            f'Call (chat_id={event.chat_id}): {repr(event.message.text)}')
         message = (get_member(event.message.from_id), event.message.text)
 
         if event.chat_id not in self.cache:
@@ -66,7 +80,7 @@ class HandlerManager:
     async def stfu(self, event: NewMessage.Event):
         logger.info(f'Stop dialog (chat_id={event.chat_id})')
         self.client.remove_event_handler(
-            self.respond, NewMessage(chats=event.chat_id))
+            self.respond, NewMessage(incoming=True, chats=event.chat_id))
         self.client.remove_event_handler(
             self.stfu, NewMessage(chats=event.chat_id, pattern='/stfu'))
         self.active_dialogs.remove(event.chat_id)
