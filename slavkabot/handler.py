@@ -1,7 +1,7 @@
 import logging
 from collections import deque
 from typing import Dict
-import re
+import asyncio
 import random
 
 from telethon import TelegramClient, events
@@ -28,6 +28,9 @@ class HandlerManager:
         self.cache: Dict[int, deque] = {}
         self.cache_size = cache_size
 
+        self.empty_ch = '⠀'
+        self.alive_ch = '⭕️'
+        self.dead_ch = '❌'
         self.react_butt_id = 'r_'
         self.game_butt_id = 'g_'
         reactions = ['👍', '😏', '🤔', '😧', '😑']
@@ -35,12 +38,15 @@ class HandlerManager:
             [[Button.inline(emoji, self.react_butt_id + emoji) for emoji in reactions]], inline_only=True)
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
-        self.client.add_event_handler(self.play, NewMessage(pattern='/play (\d*)'))
+        self.client.add_event_handler(self.play, NewMessage(
+            pattern='/play\s?(\d*)'))
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
         self.client.add_event_handler(self.on_click_reactions, events.CallbackQuery(
             pattern=self.react_butt_id + '(\S+)\s?(\d*)'))
         self.client.add_event_handler(self.on_click_game, events.CallbackQuery(
-            pattern=self.game_butt_id + '(.*)'))
+            pattern=self.game_butt_id + '(\d+)\s(\d+)\s(\d+)'))
+        self.client.add_event_handler(self.on_click_game_finish, events.CallbackQuery(
+            pattern=self.game_butt_id + 'f'))
         self.client.add_event_handler(self.add_buttons, NewMessage())
         self.client.add_event_handler(self.init_dialog, NewMessage())
 
@@ -52,12 +58,13 @@ class HandlerManager:
         logger.info(f'Clicked button with data={event.data}')
 
     async def on_click_reactions(self, event: events.CallbackQuery.Event):
-        text, num = event.pattern_match.group(1).decode('utf-8'), event.pattern_match.group(2)
+        text, num = event.pattern_match.group(1).decode(
+            'utf-8'), event.pattern_match.group(2)
         num = (int(num) if num else 0) + 1
         mes = await event.get_message()
         logger.info(
             f'{get_member(event.sender_id)} clicked reaction button {text} {num} (mes_id={mes.id}, chat_id={event.chat_id})')
-            
+
         buttons = (await mes.get_buttons())[0]  # first row
         new_text = text + ' ' + str(num)
         new_buttons = [butt if (butt.data != event.data) else Button.inline(new_text, self.react_butt_id + new_text)
@@ -70,7 +77,34 @@ class HandlerManager:
         mes = await event.get_message()
         logger.info(
             f'{get_member(event.sender_id)} clicked game button (mes_id={mes.id}, chat_id={event.chat_id})')
-    
+
+        lvl, cur, sel = [int(x) for x in event.pattern_match.groups()]
+        buttons = (await mes.get_buttons())[0]  # first row
+        complexity = 4 * len(buttons)**3
+        chance = lvl / (lvl + complexity)
+
+        if sel != cur and random.random() < chance:
+            buttons[cur] = Button.inline(self.empty_ch)
+            buttons[sel] = Button.inline(self.dead_ch)
+            await mes.edit('🎉 Победа! 🎉', buttons=buttons)
+            await asyncio.sleep(1)
+            await mes.edit(buttons=Button.inline("Получить награду", self.game_butt_id + 'f'))
+        else:
+            new_cur = random.randrange(len(buttons) - 1)
+            if new_cur >= cur:
+                new_cur = new_cur + 1
+            lvl += 1
+            game_state = self.game_butt_id + str(lvl) + ' ' + str(new_cur)
+            buttons = [Button.inline(self.empty_ch if i != new_cur else self.alive_ch,
+                                     game_state + ' ' + str(i)) for i in range(len(buttons))]
+            await mes.edit(buttons=buttons)
+
+        raise events.StopPropagation
+
+    async def on_click_game_finish(self, event: events.CallbackQuery.Event):
+        mes = await event.get_message()
+        await mes.edit('Axaxa наебал', buttons=None)
+
     async def add_buttons(self, event: NewMessage.Event):
         types_react_to = (types.MessageMediaDocument,
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
@@ -79,6 +113,7 @@ class HandlerManager:
             msg.reply_markup = self.reactions_markup
             sender = await msg.get_sender()
             msg.text = f'__From @{sender.username}__ \n' + msg.text
+            
             await msg.delete()
             await msg.respond(msg)
 
@@ -86,13 +121,20 @@ class HandlerManager:
                 f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
 
     async def play(self, event: NewMessage.Event):
+        logger.info(
+            f'Started game (chat_id={event.chat_id})')
         default_num_buttons = 5
 
         num_buttons = event.pattern_match.group(1)
         num_buttons = default_num_buttons if not num_buttons else int(num_buttons)
+        lvl = 0
+        cur = random.randrange(num_buttons)
+        game_state = self.game_butt_id + str(lvl) + ' ' + str(cur)
+        buttons = [Button.inline(self.empty_ch if i != cur else self.alive_ch,
+                                 game_state + ' ' + str(i)) for i in range(num_buttons)]
+        play_markup = self.client.build_reply_markup(buttons)
 
-        play_buttons = self.client.build_reply_markup([[Button.inline('')]])
-        # event.respond()
+        await event.respond(self.empty_ch, buttons=play_markup)
 
     async def init_dialog(self, event: NewMessage.Event):
         if event.message.mentioned and \
