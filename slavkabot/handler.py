@@ -8,7 +8,7 @@ import random
 from telethon import TelegramClient, events
 from telethon.events import NewMessage
 from telethon.tl import types
-from telethon.tl.custom import Button
+from telethon.tl.custom import Button, MessageMediaPhoto
 
 from slavkabot import Slavka
 from slavkabot import get_member
@@ -131,6 +131,9 @@ class HandlerManager:
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
             msg = event.message
+            logger.info('MESSAGE DIR:')
+            logger.info('\n'.join(['****' + repr(getattr(msg, k)) for k in dir(msg) if not k.startswith('__')]))
+
             msg.reply_markup = self.reactions_markup
             sender = await msg.get_sender()
             msg.text = f'__From @{sender.username}__ \n' + msg.text
