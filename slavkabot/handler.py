@@ -2,6 +2,7 @@ import logging
 from collections import deque
 from typing import Dict
 import re
+import random
 
 from telethon import TelegramClient, events
 from telethon.events import NewMessage
@@ -27,12 +28,19 @@ class HandlerManager:
         self.cache: Dict[int, deque] = {}
         self.cache_size = cache_size
 
+        self.react_butt_id = 'r_'
+        self.game_butt_id = 'g_'
+        reactions = ['👍', '😏', '🤔', '😧', '😑']
         self.reactions_markup = self.client.build_reply_markup(
-            [[Button.inline('👍'), Button.inline('😏'), Button.inline('🤔'),
-              Button.inline('😧'), Button.inline('😑')]], inline_only=True)
+            [[Button.inline(emoji, self.react_butt_id + emoji) for emoji in reactions]], inline_only=True)
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
+        self.client.add_event_handler(self.play, NewMessage(pattern='/play (\d*)'))
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
+        self.client.add_event_handler(self.on_click_reactions, events.CallbackQuery(
+            pattern=self.react_butt_id + '(\S+)\s?(\d*)'))
+        self.client.add_event_handler(self.on_click_game, events.CallbackQuery(
+            pattern=self.game_butt_id + '(.*)'))
         self.client.add_event_handler(self.add_buttons, NewMessage())
         self.client.add_event_handler(self.init_dialog, NewMessage())
 
@@ -41,19 +49,28 @@ class HandlerManager:
         raise events.StopPropagation
 
     async def on_click(self, event: events.CallbackQuery.Event):
-        text, *num = re.split('\s', event.data.decode('UTF-8'))
-        num = (int(num[0]) if num else 0) + 1
+        logger.info(f'Clicked button with data={event.data}')
+
+    async def on_click_reactions(self, event: events.CallbackQuery.Event):
+        text, num = event.pattern_match.group(1).decode('utf-8'), event.pattern_match.group(2)
+        num = (int(num) if num else 0) + 1
         mes = await event.get_message()
+        logger.info(
+            f'{get_member(event.sender_id)} clicked reaction button {text} {num} (mes_id={mes.id}, chat_id={event.chat_id})')
+            
         buttons = (await mes.get_buttons())[0]  # first row
-        new_buttons = [butt if (butt.data != event.data) else Button.inline(text + ' ' + str(num))
+        new_text = text + ' ' + str(num)
+        new_buttons = [butt if (butt.data != event.data) else Button.inline(new_text, self.react_butt_id + new_text)
                        for butt in buttons]
 
         await event.answer(f'You {text} this')
         await event.edit(buttons=new_buttons)
 
+    async def on_click_game(self, event: events.CallbackQuery.Event):
+        mes = await event.get_message()
         logger.info(
-            f'{get_member(event.sender_id)} clicked button (mes_id={mes.id}, chat_id={event.chat_id})')
-
+            f'{get_member(event.sender_id)} clicked game button (mes_id={mes.id}, chat_id={event.chat_id})')
+    
     async def add_buttons(self, event: NewMessage.Event):
         types_react_to = (types.MessageMediaDocument,
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
@@ -67,6 +84,15 @@ class HandlerManager:
 
             logger.info(
                 f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
+
+    async def play(self, event: NewMessage.Event):
+        default_num_buttons = 5
+
+        num_buttons = event.pattern_match.group(1)
+        num_buttons = default_num_buttons if not num_buttons else int(num_buttons)
+
+        play_buttons = self.client.build_reply_markup([[Button.inline('')]])
+        # event.respond()
 
     async def init_dialog(self, event: NewMessage.Event):
         if event.message.mentioned and \
