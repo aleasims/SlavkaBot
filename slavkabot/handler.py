@@ -70,6 +70,7 @@ class HandlerManager:
         logger.info(f'Clicked button with data={event.data}')
 
     async def on_click_gift(self, event: events.CallbackQuery.Event):
+        logger.info('Clicked on gift')
         await event.answer(f'You have unpacked a gift!')
         await event.edit(buttons=[], text='Ooops')
 
