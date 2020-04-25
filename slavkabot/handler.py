@@ -39,12 +39,12 @@ class HandlerManager:
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
         self.client.add_event_handler(self.play, NewMessage(
-            pattern='/play\s?(\d*)'))
+            pattern=r'/play\s?(\d*)'))
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
         self.client.add_event_handler(self.on_click_reactions, events.CallbackQuery(
-            pattern=self.react_butt_id + '(\S+)\s?(\d*)'))
+            pattern=self.react_butt_id + r'(\S+)\s?(\d*)'))
         self.client.add_event_handler(self.on_click_game, events.CallbackQuery(
-            pattern=self.game_butt_id + '(\d+)\s(\d+)\s(\d+)'))
+            pattern=self.game_butt_id + r'(\d+)\s(\d+)\s(\d+)'))
         self.client.add_event_handler(self.on_click_game_finish, events.CallbackQuery(
             pattern=self.game_butt_id + 'f'))
         self.client.add_event_handler(self.add_buttons, NewMessage())
@@ -113,7 +113,7 @@ class HandlerManager:
             msg.reply_markup = self.reactions_markup
             sender = await msg.get_sender()
             msg.text = f'__From @{sender.username}__ \n' + msg.text
-            
+
             await msg.delete()
             await msg.respond(msg)
 
