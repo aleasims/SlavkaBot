@@ -8,7 +8,7 @@ import random
 from telethon import TelegramClient, events
 from telethon.events import NewMessage
 from telethon.tl import types
-from telethon.tl.custom import Button, MessageMediaPhoto
+from telethon.tl.custom import Button
 
 from slavkabot import Slavka
 from slavkabot import get_member
