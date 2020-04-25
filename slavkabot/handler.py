@@ -46,7 +46,7 @@ class HandlerManager:
         self.client.add_event_handler(self.on_click_reactions, events.CallbackQuery(
             pattern=self.react_butt_id + r'(\S+)\s?(\d*)'))
         self.client.add_event_handler(self.on_click_gift, events.CallbackQuery(
-            pattern=self.gift_butt_id + r'(\S+)\s?(\d*)'))
+            pattern=self.gift_butt_id))
         self.client.add_event_handler(self.on_click_game, events.CallbackQuery(
             pattern=self.game_butt_id + r'(\d+)\s(\d+)\s(\d+)'))
         self.client.add_event_handler(self.on_click_game_finish, events.CallbackQuery(
