@@ -39,7 +39,7 @@ class HandlerManager:
             [[Button.inline(emoji, self.react_butt_id + emoji) for emoji in reactions]], inline_only=True)
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
-        self.client.add_event_handler(self.greet, NewMessage(pattern='/gift'))
+        self.client.add_event_handler(self.gift, NewMessage(pattern='/gift'))
         self.client.add_event_handler(self.play, NewMessage(
             pattern=r'/play\s?(\d*)'))
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
