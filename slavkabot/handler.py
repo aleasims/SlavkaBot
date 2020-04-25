@@ -73,8 +73,8 @@ class HandlerManager:
     async def on_click_gift(self, event: events.CallbackQuery.Event):
         link = requests.get('https://meme-api.herokuapp.com/gimme').json()['url']
         logger.info(f'Gift link: {link}')
-        image = requests.get(link).raw
-        logger.info(f'Image size: {len(image)}')
+        image = requests.get(link).content
+        logger.info(f'Image size: {len(image)} bytes')
         await event.answer(f'You have unpacked a gift!')
         await event.edit(buttons=None, file=image)
 
