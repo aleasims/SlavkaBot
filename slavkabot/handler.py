@@ -59,7 +59,7 @@ class HandlerManager:
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
             msg = event.message
-            msg.reply_markup = self.markup
+            msg.reply_markup = self.reactions_markup
             sender = await msg.get_sender()
             msg.text = f'__From @{sender.username}__ \n' + msg.text
             await msg.delete()
