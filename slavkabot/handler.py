@@ -61,7 +61,7 @@ class HandlerManager:
 
     async def gift(self, event: NewMessage.Event):
         msg = event.message
-        msg.text = 'Here is a gift for you!'
+        msg.text = 'Unpack your gift!'
         msg.reply_markup = self.client.build_reply_markup(
             [Button.inline('🎁', data=self.gift_butt_id)],
             inline_only=True)
@@ -73,10 +73,11 @@ class HandlerManager:
     async def on_click_gift(self, event: events.CallbackQuery.Event):
         link = requests.get('https://meme-api.herokuapp.com/gimme').json()['url']
         logger.info(f'Gift link: {link}')
-        image = requests.get(link).content
-        logger.info(f'Image size: {len(image)} bytes')
+        # image = requests.get(link).content
+        # logger.info(f'Image size: {len(image)} bytes')
         await event.answer(f'You have unpacked a gift!')
-        await event.edit(buttons=None, file=image)
+        await event.edit(buttons=None)
+        await self.client.send_file(event.chat_id, file=link)
 
     async def on_click_reactions(self, event: events.CallbackQuery.Event):
         text, num = event.pattern_match.group(1).decode(
@@ -132,7 +133,8 @@ class HandlerManager:
         if isinstance(event.media, types_react_to) and not event.sticker:
             msg = event.message
             logger.info('MESSAGE DIR:')
-            logger.info('\n'.join(['****' + repr(getattr(msg, k)) for k in dir(msg) if not k.startswith('__')]))
+            logger.info('\n'.join([f'**** {k}: {repr(getattr(msg, k))}'
+                                   for k in dir(msg) if not k.startswith('__')]))
 
             msg.reply_markup = self.reactions_markup
             sender = await msg.get_sender()
