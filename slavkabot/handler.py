@@ -58,7 +58,7 @@ class HandlerManager:
         types_react_to = (types.MessageMediaDocument,
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
-            await event.respond('🤔', buttons=self.markup)
+            await event.respond('⠀', buttons=self.markup)
 
         logger.info(
             f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
