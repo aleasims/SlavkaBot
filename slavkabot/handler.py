@@ -45,6 +45,7 @@ class HandlerManager:
         self.client.add_event_handler(self.gift, NewMessage(pattern='/gift'))
         self.client.add_event_handler(self.play, NewMessage(
             pattern=r'/play\s?(\d*)'))
+        self.client.on_album(self.on_album, events.Album())
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
         self.client.add_event_handler(self.on_click_reactions, events.CallbackQuery(
             pattern=self.react_butt_id + r'(\S+)\s?(\d*)'))
@@ -68,6 +69,9 @@ class HandlerManager:
             [Button.inline('🎁', data=self.gift_butt_id)],
             inline_only=True)
         await msg.respond(msg)
+
+    async def on_album(self, event: events.Album.Event):
+        raise events.StopPropagation
 
     async def on_click(self, event: events.CallbackQuery.Event):
         logger.info(f'Clicked button with data={event.data}')
