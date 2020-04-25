@@ -7,6 +7,7 @@ from telethon import TelegramClient, events
 from telethon.events import NewMessage
 from telethon.tl import types
 from telethon.tl.custom import Button
+from telethon import extensions
 
 from slavkabot import Slavka
 from slavkabot import get_member
@@ -58,7 +59,12 @@ class HandlerManager:
         types_react_to = (types.MessageMediaDocument,
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
-            await event.respond('⠀', buttons=self.markup)
+            msg = event.message
+            msg.reply_markup = self.markup
+            sender = await msg.get_sender()
+            msg.text = f'__From @{sender.username}__ \n' + msg.text  #  `From [user](tg://user?id=225315032)!` 
+            await msg.delete()
+            await msg.respond(msg)
 
         logger.info(
             f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
