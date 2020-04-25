@@ -33,11 +33,13 @@ class HandlerManager:
         self.dead_ch = '❌'
         self.react_butt_id = 'r_'
         self.game_butt_id = 'g_'
+        self.gift_butt_id = 'gft'
         reactions = ['👍', '😏', '🤔', '😧', '😑']
         self.reactions_markup = self.client.build_reply_markup(
             [[Button.inline(emoji, self.react_butt_id + emoji) for emoji in reactions]], inline_only=True)
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
+        self.client.add_event_handler(self.greet, NewMessage(pattern='/gift'))
         self.client.add_event_handler(self.play, NewMessage(
             pattern=r'/play\s?(\d*)'))
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
@@ -53,6 +55,13 @@ class HandlerManager:
     async def greet(self, event: NewMessage.Event):
         await event.respond(self.slavka.greeting())
         raise events.StopPropagation
+
+    async def gift(self, event: NewMessage.Event):
+        msg = event.message
+        msg.reply_markup = self.client.build_reply_markup(
+            [Button.inline('🎁', data=self.gift_butt_id)],
+            inline_only=True)
+        await msg.respond(msg)
 
     async def on_click(self, event: events.CallbackQuery.Event):
         logger.info(f'Clicked button with data={event.data}')
