@@ -45,6 +45,8 @@ class HandlerManager:
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
         self.client.add_event_handler(self.on_click_reactions, events.CallbackQuery(
             pattern=self.react_butt_id + r'(\S+)\s?(\d*)'))
+        self.client.add_event_handler(self.on_click_gift, events.CallbackQuery(
+            pattern=self.gift_butt_id + r'(\S+)\s?(\d*)'))
         self.client.add_event_handler(self.on_click_game, events.CallbackQuery(
             pattern=self.game_butt_id + r'(\d+)\s(\d+)\s(\d+)'))
         self.client.add_event_handler(self.on_click_game_finish, events.CallbackQuery(
@@ -58,6 +60,7 @@ class HandlerManager:
 
     async def gift(self, event: NewMessage.Event):
         msg = event.message
+        msg.text = 'Here is a gift for you!'
         msg.reply_markup = self.client.build_reply_markup(
             [Button.inline('🎁', data=self.gift_butt_id)],
             inline_only=True)
@@ -65,6 +68,10 @@ class HandlerManager:
 
     async def on_click(self, event: events.CallbackQuery.Event):
         logger.info(f'Clicked button with data={event.data}')
+
+    async def on_click_gift(self, event: events.CallbackQuery.Event):
+        await event.answer(f'You have unpacked a gift!')
+        await event.edit(buttons=[], text='Ooops')
 
     async def on_click_reactions(self, event: events.CallbackQuery.Event):
         text, num = event.pattern_match.group(1).decode(
