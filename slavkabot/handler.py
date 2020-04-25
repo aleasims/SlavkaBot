@@ -27,9 +27,9 @@ class HandlerManager:
         self.cache: Dict[int, deque] = {}
         self.cache_size = cache_size
 
-        self.markup = self.client.build_reply_markup([[Button.inline('👍'), Button.inline('😏'),
-                                                       Button.inline('🤔'), Button.inline('😧'),
-                                                       Button.inline('😑')]], inline_only=True)
+        self.reactions_markup = self.client.build_reply_markup(
+            [[Button.inline('👍'), Button.inline('😏'), Button.inline('🤔'),
+              Button.inline('😧'), Button.inline('😑')]], inline_only=True)
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
         self.client.add_event_handler(self.on_click, events.CallbackQuery())
@@ -65,8 +65,8 @@ class HandlerManager:
             await msg.delete()
             await msg.respond(msg)
 
-        logger.info(
-            f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
+            logger.info(
+                f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
 
     async def init_dialog(self, event: NewMessage.Event):
         if event.message.mentioned and \
