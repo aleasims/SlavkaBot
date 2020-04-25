@@ -72,7 +72,7 @@ class HandlerManager:
     async def on_click_gift(self, event: events.CallbackQuery.Event):
         logger.info('Clicked on gift')
         await event.answer(f'You have unpacked a gift!')
-        await event.edit(buttons=[], text='Ooops')
+        await event.edit(buttons=[], text='Ooops', reply_markup=None)
 
     async def on_click_reactions(self, event: events.CallbackQuery.Event):
         text, num = event.pattern_match.group(1).decode(
