@@ -5,3 +5,4 @@ regex
 transformers
 torch
 googledrivedownloader
+requests

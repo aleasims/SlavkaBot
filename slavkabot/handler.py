@@ -1,4 +1,5 @@
 import logging
+import requests
 from collections import deque
 from typing import Dict
 import asyncio
@@ -70,9 +71,12 @@ class HandlerManager:
         logger.info(f'Clicked button with data={event.data}')
 
     async def on_click_gift(self, event: events.CallbackQuery.Event):
-        logger.info('Clicked on gift')
+        link = requests.get('https://meme-api.herokuapp.com/gimme').json()['url']
+        logger.info(f'Gift link: {link}')
+        image = requests.get(link).raw
+        logger.info(f'Image size: {len(image)}')
         await event.answer(f'You have unpacked a gift!')
-        await event.edit('Axaxa наебал', buttons=None)
+        await event.edit(buttons=None, file=image)
 
     async def on_click_reactions(self, event: events.CallbackQuery.Event):
         text, num = event.pattern_match.group(1).decode(
