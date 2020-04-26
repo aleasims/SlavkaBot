@@ -35,9 +35,11 @@ class HandlerManager:
         self.react_butt_id = 'r_'
         self.game_butt_id = 'g_'
         self.gift_butt_id = 'gft'
+        self.meme_API_URL = 'https://meme-api.herokuapp.com/gimme'
         reactions = ['👍', '😏', '🤔', '😧', '😑']
+        self.buttons = [[Button.inline(emoji, self.react_butt_id + emoji) for emoji in reactions]]
         self.reactions_markup = self.client.build_reply_markup(
-            [[Button.inline(emoji, self.react_butt_id + emoji) for emoji in reactions]], inline_only=True)
+            self.buttons, inline_only=True)
 
         self.client.add_event_handler(self.greet, NewMessage(pattern='/greet'))
         self.client.add_event_handler(self.gift, NewMessage(pattern='/gift'))
@@ -71,13 +73,22 @@ class HandlerManager:
         logger.info(f'Clicked button with data={event.data}')
 
     async def on_click_gift(self, event: events.CallbackQuery.Event):
-        link = requests.get('https://meme-api.herokuapp.com/gimme').json()['url']
-        logger.info(f'Gift link: {link}')
-        # image = requests.get(link).content
-        # logger.info(f'Image size: {len(image)} bytes')
-        await event.answer(f'You have unpacked a gift!')
-        await event.edit(buttons=None)
-        await self.client.send_file(event.chat_id, file=link)
+        try:
+            link = requests.get(self.meme_API_URL).json().get('url')
+        except ValueError as e:
+            logger.info(f'Cannot load JSON from API: {e}')
+            link = None
+
+        if link:
+            logger.info(f'Gift link: {link}')
+            await event.answer(f'You have unpacked a gift!')
+            await event.message.delete()
+            await self.client.send_message(event.chat_id, 'Gift from reddit 😉',
+                                           file=link,
+                                           buttons=self.reactions_markup)
+        else:
+            logger.info(f'Gift link not found')
+            await event.answer(f'Sorry, cannot unpack gift now :(')
 
     async def on_click_reactions(self, event: events.CallbackQuery.Event):
         text, num = event.pattern_match.group(1).decode(
@@ -132,10 +143,6 @@ class HandlerManager:
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
             msg = event.message
-            logger.info('MESSAGE DIR:')
-            logger.info('\n'.join([f'**** {k}: {repr(getattr(msg, k))}'
-                                   for k in dir(msg) if not k.startswith('__')]))
-
             msg.reply_markup = self.reactions_markup
             sender = await msg.get_sender()
             msg.text = f'__From @{sender.username}__ \n' + msg.text
@@ -152,7 +159,8 @@ class HandlerManager:
         default_num_buttons = 5
 
         num_buttons = event.pattern_match.group(1)
-        num_buttons = default_num_buttons if not num_buttons else int(num_buttons)
+        num_buttons = default_num_buttons if not num_buttons else int(
+            num_buttons)
         lvl = 0
         cur = random.randrange(num_buttons)
         game_state = self.game_butt_id + str(lvl) + ' ' + str(cur)
