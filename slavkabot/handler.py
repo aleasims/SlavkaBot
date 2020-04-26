@@ -55,7 +55,7 @@ class HandlerManager:
             pattern=self.game_butt_id + r'(\d+)\s(\d+)\s(\d+)'))
         self.client.add_event_handler(self.on_click_game_finish, events.CallbackQuery(
             pattern=self.game_butt_id + 'f'))
-        self.client.add_event_handler(self.add_buttons, NewMessage())
+        self.client.add_event_handler(self.add_buttons, NewMessage(incoming=True))
         self.client.add_event_handler(self.init_dialog, NewMessage())
 
     async def greet(self, event: NewMessage.Event):
@@ -71,7 +71,9 @@ class HandlerManager:
         await msg.respond(msg)
 
     async def on_album(self, event: events.Album.Event):
-        raise events.StopPropagation
+        logging.info(f' Album (chat_id={event.chat_id})')
+        # TODO: add reaction buttons to whole album
+        events.StopPropagation
 
     async def on_click(self, event: events.CallbackQuery.Event):
         logger.info(f'Clicked button with data={event.data}')
@@ -148,15 +150,16 @@ class HandlerManager:
                           types.MessageMediaPhoto, types.MessageMediaWebPage)
         if isinstance(event.media, types_react_to) and not event.sticker:
             msg = event.message
-            msg.reply_markup = self.reactions_markup
-            sender = await msg.get_sender()
-            msg.text = f'__From @{sender.username}__ \n' + msg.text
+            if not msg.grouped_id:
+                msg.reply_markup = self.reactions_markup
+                sender = await msg.get_sender()
+                msg.text = f'__From @{sender.username}__ \n' + msg.text
 
-            await msg.delete()
-            await msg.respond(msg)
+                await msg.delete()
+                await msg.respond(msg)
 
-            logger.info(
-                f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
+                logger.info(
+                    f'Added buttons (mes_id={event.message.id}, chat_id={event.chat_id})')
 
     async def play(self, event: NewMessage.Event):
         logger.info(
