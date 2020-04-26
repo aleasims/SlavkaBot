@@ -1,5 +1,5 @@
 docker stop slavka
 docker rm slavka
-git pull origin master
+git pull
 docker build -t slavka:latest .
 docker run -d --name slavka slavka
