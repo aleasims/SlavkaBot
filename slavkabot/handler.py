@@ -75,14 +75,15 @@ class HandlerManager:
     async def on_click_gift(self, event: events.CallbackQuery.Event):
         try:
             link = requests.get(self.meme_API_URL).json().get('url')
+            logger.info(f'Gift link: {link}')
         except ValueError as e:
             logger.info(f'Cannot load JSON from API: {e}')
             link = None
 
         if link:
-            logger.info(f'Gift link: {link}')
+            msg = await event.get_message()
             await event.answer(f'You have unpacked a gift!')
-            await event.message.delete()
+            await msg.delete()
             await self.client.send_message(event.chat_id, 'Gift from reddit 😉',
                                            file=link,
                                            buttons=self.reactions_markup)
