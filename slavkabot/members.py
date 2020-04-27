@@ -22,7 +22,7 @@ TeleId2Name = {
     687124937: 'Жак',
     225315032: 'Борз',
     422842018: 'Степан',
-    1016732841: 'Cлавка',
+    1016732841: 'Славка',
     # 1088798978: 'Bot'
     178499692: 'Игорь',
     354275035: 'Марти',
@@ -66,3 +66,7 @@ def get_member(key: Union[int, str]) -> Member:
     # For now Жак will be default member
 
     return members['Жак']
+
+
+if __name__ == '__main__':
+    print(members)
